@@ -3,7 +3,9 @@ criteria of choosing agent harness framework
 
 # User Interaction
 ## 1.Direct Message in Slack
+1.1 TBD
 ## 2.TUI Based
+2.1 TBD
 
 # Use Cases:
 Maintenance of large code based, Context Window/Retrieval Infra. Domain specific guardrail, Sandbox and security
