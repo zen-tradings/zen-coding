@@ -27,3 +27,6 @@ Reasoning traces logging, output logging, metadata like cost/latency
 1. Quant-pipeline
 2. Quant-research
 3. wq-alpha-research
+
+# Benchmarking 
+Finalizing which benchmarkings are suitable to test
