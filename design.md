@@ -17,7 +17,7 @@ Proprietary Codebase searching, public codebase searching, web search, document 
 # Observability
 Reasoning traces logging, output logging, metadata like cost/latency
 
-# Priority of building verifier/eval dataset
+# 🌟 Priority of building verifier/eval dataset
 ## High Priority
 1. Beta-audit
 2. Portfolio construction
