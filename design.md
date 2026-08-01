@@ -11,6 +11,12 @@ Proprietary Codebase searching, public codebase searching, web search, document 
 # Observability
 Reasoning traces logging, output logging, metadata like cost/latency
 
+# Priority of building verifier/eval dataset
+## High Priority
+1. Beta-audit
+2. Portfolio construction
+3. Fundamental analysis
 
-
-
+## Low Priority
+1. Quant-pipeline
+2. Quant-research
