@@ -3,7 +3,8 @@ Maintenance of large code based, Context Window/Retrieval Infra. Domain specific
 
 
 # MCP/Tool Used:
-Proprietary Codebase searching, public codebase searching, web search, document search
+Proprietary Codebase searching, public codebase searching, web search, document search, proprietary quantifiable data connector
+
 
 
 
