@@ -30,3 +30,5 @@ Reasoning traces logging, output logging, metadata like cost/latency
 
 # Benchmarking 
 Finalizing which benchmarkings are suitable to test, like Marketbench
+
+Dimension: cost/latency under same task define (public open source agent & zen coding agent)
