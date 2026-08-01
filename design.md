@@ -23,6 +23,7 @@ Reasoning traces logging, output logging, metadata like cost/latency
 2. Portfolio construction
 3. Fundamental analysis
 4. wq-alpha-research
+5. quant paper research
 
 ## Low Priority
 1. Quant-pipeline
