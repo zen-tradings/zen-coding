@@ -22,11 +22,11 @@ Reasoning traces logging, output logging, metadata like cost/latency
 1. Beta-audit
 2. Portfolio construction
 3. Fundamental analysis
+4. wq-alpha-research
 
 ## Low Priority
 1. Quant-pipeline
 2. Quant-research
-3. wq-alpha-research
 
 # Benchmarking 
 Finalizing which benchmarkings are suitable to test, like Marketbench
