@@ -3,7 +3,7 @@ criteria of choosing agent harness framework
 
 # User Interaction
 ## 1.Direct Message in Slack
-1.1 TBD
+1.1 When user @ this coding agent in slack channel with a specific 
 ## 2.TUI Based
 2.1 TBD
 
