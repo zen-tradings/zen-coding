@@ -2,13 +2,13 @@
 criteria of choosing agent harness framework
 
 # User Interaction
-## 1.Direct Message in Slack
+## 1.Direct Message in Slack and coding agent run in the backend completely
 1.1 When user @ this coding agent in slack channel with a specific github link or a request, it can instantly access to the code based and update the code.
 1.2 When the query is not clear, it could firstly ask follow-up question to clarify and then start to plan
 1.3 Support /command to choose different mode to develop
 
 ## 2.TUI Based
-2.1 The interaction mode like Claude Code 
+2.1 The interaction mode like Claude Code
 
 # Use Cases:
 Maintenance of large code based, Context Window/Retrieval Infra. Domain specific guardrail, Sandbox and security
