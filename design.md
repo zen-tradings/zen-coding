@@ -24,7 +24,10 @@ criteria of choosing agent harness framework
 - Proprietary Data Search/Connector
 
 # Observability
-Reasoning traces logging, output logging, metadata like cost/latency
+- Multi-round Reasoning traces during planning and developing
+- Tool calling record
+- Logging Record and output logging
+- Metadata like cost/latency
 
 # 🌟 Priority of building verifier/eval dataset
 ## High Priority
