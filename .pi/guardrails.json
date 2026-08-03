@@ -1,0 +1,16 @@
+{
+  "denyBashPatterns": [
+    "rm\\s+-[rRfF]+\\s+(/|~)(\\s|$)",
+    "git\\s+push\\b.*--force(?!-with-lease)",
+    "git\\s+reset\\s+--hard"
+  ],
+  "protectedPaths": [
+    ".env",
+    ".env.*",
+    "**/*.pem",
+    "**/*.key",
+    ".zen/**",
+    ".git/**"
+  ],
+  "allowWritesOutsideCwd": false
+}
