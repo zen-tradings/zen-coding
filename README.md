@@ -113,6 +113,15 @@ after trust). Servers are configured in `.pi/mcp.json`:
   Settings → API Keys and `export ALPHAXIV_API_KEY=...`; in the TUI you can instead run
   `/mcp-auth alphaxiv` for browser OAuth. Without credentials the connector logs a
   warning and the session continues without it.
+- **paper-search** ([openags/paper-search-mcp](https://github.com/openags/paper-search-mcp),
+  local stdio server run via `uvx paper-search-mcp` — requires [uv](https://docs.astral.sh/uv/))
+  — multi-source paper search/download across 24+ platforms: arXiv, PubMed,
+  bioRxiv/medRxiv, Semantic Scholar, OpenAlex, Crossref, SSRN, Google Scholar, ….
+  Unified `search_papers` / `download_with_fallback` plus per-platform tools. Most
+  sources work without keys; optional keys (CORE, Semantic Scholar, Unpaywall email)
+  go in `~/.config/paper-search-mcp/.env`. Complements alphaXiv: alphaXiv gives
+  AI-digested reports and library management, paper-search gives raw multi-source
+  retrieval including SSRN.
 - **GitHub** (`https://api.githubcopilot.com/mcp/`, the official
   [github-mcp-server](https://github.com/github/github-mcp-server)) — structured
   issue/PR/repo tools: `create_issue`, `add_issue_comment`, `create_pull_request`,

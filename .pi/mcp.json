@@ -11,6 +11,11 @@
       "auth": "bearer",
       "bearerToken": "!gh auth token",
       "requestTimeoutMs": 60000
+    },
+    "paper-search": {
+      "command": "uvx",
+      "args": ["paper-search-mcp"],
+      "requestTimeoutMs": 120000
     }
   }
 }
