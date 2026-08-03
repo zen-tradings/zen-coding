@@ -68,13 +68,18 @@ export SLACK_APP_TOKEN=xapp-...   # app-level token (Socket Mode)
 npm run slack
 ```
 
-Slack app setup (<https://api.slack.com/apps> → Create New App):
+Slack app setup (<https://api.slack.com/apps> → Create New App → **From a manifest**):
 
-1. **Socket Mode**: enable, create an app-level token with `connections:write`.
-2. **OAuth scopes (bot)**: `app_mentions:read`, `chat:write`, `channels:history`,
-   `im:history`, `im:read`, `im:write`, `reactions:write`.
-3. **Event subscriptions (bot events)**: `app_mention`, `message.im`, `message.channels`.
-4. Install to workspace, invite the bot to a channel, @-mention it.
+1. Pick your workspace and paste [`slack-app-manifest.yaml`](slack-app-manifest.yaml)
+   (scopes, events, and Socket Mode are pre-configured).
+2. **Basic Information → App-Level Tokens** → generate a token with
+   `connections:write` → this is `SLACK_APP_TOKEN` (`xapp-…`).
+3. **Install App → Install to Workspace** → copy the Bot User OAuth Token → this is
+   `SLACK_BOT_TOKEN` (`xoxb-…`).
+4. Invite the bot to a channel (`/invite @zen-coding`) and @-mention it, or DM it.
+
+For private channels, additionally add the `groups:history` scope and the
+`message.groups` event, then reinstall the app.
 
 How it maps to pi:
 
@@ -96,6 +101,33 @@ How it maps to pi:
 All knobs (model override, clone depth, idle eviction, …) are documented in
 `src/slack/config.ts`.
 
+## MCP connectors
+
+MCP servers are bridged via [`pi-mcp-adapter`](https://github.com/nicobailon/pi-mcp-adapter),
+installed as a project package (`.pi/settings.json`; pi auto-installs it on first run
+after trust). Servers are configured in `.pi/mcp.json`:
+
+- **alphaXiv** (`https://api.alphaxiv.org/mcp/v1`) — quant paper research:
+  `discover_papers`, `get_paper_content`, `answer_pdf_queries`, GitHub repo reading for
+  papers, and library folder management. Auth: create an API key at alphaxiv.org →
+  Settings → API Keys and `export ALPHAXIV_API_KEY=...`; in the TUI you can instead run
+  `/mcp-auth alphaxiv` for browser OAuth. Without credentials the connector logs a
+  warning and the session continues without it.
+- **GitHub** (`https://api.githubcopilot.com/mcp/`, the official
+  [github-mcp-server](https://github.com/github/github-mcp-server)) — structured
+  issue/PR/repo tools: `create_issue`, `add_issue_comment`, `create_pull_request`,
+  searches, notifications, …. Auth reuses your `gh` CLI login (the adapter runs
+  `gh auth token` at connect time — no separate PAT needed). Note the agent acts as
+  whoever `gh` is logged in as, regardless of which Slack user drove the request. To
+  restrict capabilities, append `/readonly` to the URL or scope with
+  `/x/<toolset>` paths (e.g. `/x/issues`).
+
+All MCP tools are exposed through a single `mcp` proxy tool to keep the per-session
+context footprint small. MCP config resolves from this repo's working directory, so
+repos checked out by the Slack backend cannot inject their own MCP servers via a
+committed `.mcp.json` (verified — a checkout's `.mcp.json` is not read). Start the
+Slack backend from the repo root so the same config applies there.
+
 ## Architecture & roadmap
 
 The same extensions load in every pi mode, so the quant layer is built once and shared
@@ -109,8 +141,9 @@ across all interaction surfaces (design.md §User Interaction):
 4. **Eval/benchmark runner**: drive `pi --mode json` headlessly over task datasets
    (beta-audit, portfolio construction, …), scoring outputs and reading cost/latency
    from the traces.
-5. **MCP connectors**: bridge MCP servers (GitHub connector, proprietary data) via
-   pi-mcp-extension or native tools in `zen-tools/`.
+5. **MCP connectors** (done for alphaXiv + GitHub via `pi-mcp-adapter`, see above):
+   next up proprietary data connectors, via `.pi/mcp.json` or native tools in
+   `zen-tools/`.
 
 ## References
 

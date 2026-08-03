@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "alphaxiv": {
+      "url": "https://api.alphaxiv.org/mcp/v1",
+      "auth": "bearer",
+      "bearerTokenEnv": "ALPHAXIV_API_KEY",
+      "requestTimeoutMs": 60000
+    },
+    "github": {
+      "url": "https://api.githubcopilot.com/mcp/",
+      "auth": "bearer",
+      "bearerToken": "!gh auth token",
+      "requestTimeoutMs": 60000
+    }
+  }
+}

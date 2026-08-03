@@ -1,0 +1,31 @@
+# Slack app manifest for the zen-coding backend (src/slack/).
+# Create the app at https://api.slack.com/apps → "Create New App" → "From a manifest".
+display_information:
+  name: zen-coding
+  description: Quant coding agent — @mention it with a request or GitHub link and it codes in a backend session.
+  background_color: "#1a1d21"
+features:
+  bot_user:
+    display_name: zen-coding
+    always_online: true
+oauth_config:
+  scopes:
+    bot:
+      - app_mentions:read
+      - chat:write
+      - channels:history
+      - im:history
+      - im:read
+      - im:write
+      - reactions:write
+settings:
+  event_subscriptions:
+    bot_events:
+      - app_mention
+      - message.im
+      - message.channels
+  interactivity:
+    is_enabled: false
+  org_deploy_enabled: false
+  socket_mode_enabled: true
+  token_rotation_enabled: false
