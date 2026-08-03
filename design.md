@@ -16,6 +16,7 @@ Maintenance of large code based, Context Window/Retrieval Infra. Domain specific
 
 # MCP/Tool Used:
 Proprietary Codebase searching, public codebase searching, web search, document search, proprietary quantifiable data connector
+- 
 
 # Observability
 Reasoning traces logging, output logging, metadata like cost/latency
@@ -38,3 +39,8 @@ Finalizing which benchmarkings are suitable to test, like Marketbench
 Dimension: cost/latency under same task define (public open source agent & zen coding agent)
 
 # System Design Issue to Consider
+- Is this solving the right user problem?
+- Which parts should be tested first?
+- How does the design behave under load?
+- What would make the system easier for the next engineer?
+
