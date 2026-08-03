@@ -11,12 +11,17 @@ criteria of choosing agent harness framework
 2.1 The interaction mode like Claude Code
 
 # Use Cases:
-Maintenance of large code based, Context Window/Retrieval Infra. Domain specific guardrail, Sandbox and security
+- Maintenance of large code based
+- Context Window/Retrieval Infra
+- Quant Research Domain specific guardrail
+- Sandbox and security for some certain test
 
 
 # MCP/Tool Used:
-Proprietary Codebase searching, public codebase searching, web search, document search, proprietary quantifiable data connector
-- 
+- Github Code Connector
+- Exa Search, particularly code search
+- Exa Web Search
+- Proprietary Data Search/Connector
 
 # Observability
 Reasoning traces logging, output logging, metadata like cost/latency
