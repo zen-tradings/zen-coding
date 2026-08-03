@@ -56,15 +56,54 @@ benchmarking (cost/latency per task, see design.md) a matter of swapping `/model
 
 Extensions are TypeScript, loaded by pi without a build step. `npm run typecheck` checks them.
 
+## Slack backend
+
+`src/slack/` implements design.md §User Interaction 1: @-mention the bot in a channel
+(optionally with a GitHub link) and the agent works in a backend session, streaming its
+reply into the thread via message edits. DMs work the same way without the mention.
+
+```bash
+export SLACK_BOT_TOKEN=xoxb-...   # bot token
+export SLACK_APP_TOKEN=xapp-...   # app-level token (Socket Mode)
+npm run slack
+```
+
+Slack app setup (<https://api.slack.com/apps> → Create New App):
+
+1. **Socket Mode**: enable, create an app-level token with `connections:write`.
+2. **OAuth scopes (bot)**: `app_mentions:read`, `chat:write`, `channels:history`,
+   `im:history`, `im:read`, `im:write`, `reactions:write`.
+3. **Event subscriptions (bot events)**: `app_mention`, `message.im`, `message.channels`.
+4. Install to workspace, invite the bot to a channel, @-mention it.
+
+How it maps to pi:
+
+- **Thread ↔ session**: each Slack thread (or DM) gets its own pi `AgentSession`
+  (SDK `createAgentSession`), persisted so threads survive restarts and idle
+  eviction (mapping in `.zen/slack/threads.json`).
+- **Repo checkout per thread**: a GitHub link in the first message pins the thread to
+  a clone under `.zen/slack/workspaces/`; `GITHUB_TOKEN` enables private repos (token
+  is passed per git call, never written to disk). No link → `ZEN_SLACK_DEFAULT_CWD`.
+- **Streaming**: replies stream into one message via throttled `chat.update` edits,
+  with a tool-activity status line; long answers are chunked.
+- **Steering**: messages sent while the agent is running are delivered as steering
+  input to the ongoing run. `/zen plan|clarify|normal` works from Slack too.
+- **Isolation**: zen extensions/guardrails always load from *this* repo — a cloned
+  repo's `.pi/extensions/` is never executed. Guardrails block writes outside the
+  thread's checkout. `ZEN_SLACK_ALLOWED_USERS` (comma-separated user IDs) restricts
+  who can drive the bot.
+
+All knobs (model override, clone depth, idle eviction, …) are documented in
+`src/slack/config.ts`.
+
 ## Architecture & roadmap
 
 The same extensions load in every pi mode, so the quant layer is built once and shared
 across all interaction surfaces (design.md §User Interaction):
 
 1. **TUI** (done — this scaffold): `npm run agent`.
-2. **Slack backend**: a service that maps Slack threads to pi sessions via the SDK
-   (`createAgentSession`) or an RPC subprocess per session; repo checkout per request;
-   streamed replies via message edits.
+2. **Slack backend** (done — `src/slack/`, see above): Slack threads ↔ pi sessions via
+   the SDK; repo checkout per thread; streamed replies via message edits.
 3. **Sandboxing**: run each backend session in a container (RPC subprocess), following
    pi-chat's isolation model.
 4. **Eval/benchmark runner**: drive `pi --mode json` headlessly over task datasets
