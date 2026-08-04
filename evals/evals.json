@@ -1,0 +1,18 @@
+{
+  "_readme": "Eval cases for the coding agent. Each case: fresh checkout of `repo` at `base_commit`, run pi headless with `prompt`, then every assertion `cmd` runs in the checkout (bash, exit 0 = pass). `repo` is an absolute path or a path relative to this repo's root ('.' = zen-coding itself). Real golden-PR cases go here; `smoke-hello` only proves the loop works.",
+  "cases": [
+    {
+      "id": "smoke-hello",
+      "repo": ".",
+      "base_commit": "HEAD",
+      "prompt": "Create a file named hello_eval.txt at the repository root containing exactly the single line: ok",
+      "timeout_s": 300,
+      "assertions": [
+        {
+          "desc": "hello_eval.txt exists with the expected content",
+          "cmd": "[ \"$(cat hello_eval.txt)\" = \"ok\" ]"
+        }
+      ]
+    }
+  ]
+}
