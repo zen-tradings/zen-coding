@@ -63,7 +63,10 @@ Dimension: cost/latency under same task define (public open source agent & zen c
 
 
 # Quant skills (.pi/skills/) matching your eval priorities    
-
+- beta-audit
+- alpha-research
+- backtest
+- paper-replication
 
 # Real eval cases
 
