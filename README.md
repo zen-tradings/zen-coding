@@ -17,6 +17,11 @@ npm install
 export DEEPSEEK_API_KEY=...        # or ANTHROPIC_API_KEY, GROQ_API_KEY, OPENROUTER_API_KEY, ...
 export EXA_API_KEY=...             # optional, enables the exa_search tool
 
+# Optional: Braintrust tracing of interactive sessions (off by default)
+export TRACE_TO_BRAINTRUST=true
+export BRAINTRUST_API_KEY=...
+export BRAINTRUST_PROJECT=zen-coding
+
 npm run agent                      # launches the pi TUI with zen extensions loaded
 ```
 
@@ -50,6 +55,10 @@ benchmarking (cost/latency per task, see design.md) a matter of swapping `/model
 |---|---|
 | `guardrails.ts` | Blocks denied bash patterns and writes to protected paths before any tool executes. Rules in `.pi/guardrails.json`. |
 | `observability.ts` | JSONL telemetry per session → `.zen/traces/<sessionId>.jsonl`: turn/tool latency, token usage, cost, model switches. Full transcripts live in pi's session files. |
+
+Optional hosted tracing: `@braintrust/pi-extension` (in `.pi/settings.json` packages) streams
+interactive sessions to Braintrust when `TRACE_TO_BRAINTRUST=true` + `BRAINTRUST_API_KEY` are set.
+The local JSONL traces remain the source of truth for the eval harness; Braintrust is the dashboard.
 | `modes.ts` | `/zen normal\|clarify\|plan` — clarify asks follow-up questions first; plan is read-only. |
 | `zen-models.ts` | Registers self-hosted open-source model endpoints from `ZEN_LOCAL_*` env vars. |
 | `zen-tools/` | `exa_search` (web/code/paper search). GitHub goes through `gh` + bash for now; proprietary data connectors land here. |

@@ -23,6 +23,10 @@ runs in this repo. See README.md and design.md for the full picture.
 - GitHub MCP auth reuses `gh auth token` (no PAT needed)
 - `ZEN_LOCAL_BASE_URL` / `ZEN_LOCAL_MODELS` — self-hosted model endpoints
   (see `.pi/extensions/zen-models.ts`)
+- Braintrust tracing (opt-in, off by default): `TRACE_TO_BRAINTRUST=true`,
+  `BRAINTRUST_API_KEY`, `BRAINTRUST_PROJECT=zen-coding`. Restart pi after
+  setting these. Covers interactive sessions; the Slack backend (SDK mode)
+  needs separate wiring (see Braintrust's "Pi Coding Agent SDK" docs).
 
 ## Conventions
 
