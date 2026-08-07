@@ -1,4 +1,6 @@
 {
+  "defaultProvider": "fireworks",
+  "defaultModel": "accounts/fireworks/models/kimi-k3",
   "packages": [
     "npm:pi-mcp-adapter"
   ]
