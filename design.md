@@ -54,6 +54,12 @@ Dimension: cost/latency under same task define (public open source agent & zen c
 
 
 # Quant Related Guardrail
+ - shift(-, t-1 indexing into future rows, .fit( before a train/test split → lookahead bias                                                                       
+ - inplace=True on shared DataFrames → cross-contamination between experiments                                                                                    
+ - Writes to production data dirs / model artifacts / live-trading configs → protected paths                                                                      
+ - Backtests without transaction costs or with  survivorship-prone universes → warn                                                                               
+                                                                                                                                                                  
+ This is your most differentiating piece vs. a generic coding agent — a warning at edit time beats a failed eval later.         
 
 
 # Quant skills (.pi/skills/) matching your eval priorities    
