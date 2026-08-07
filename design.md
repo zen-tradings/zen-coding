@@ -53,7 +53,7 @@ Dimension: cost/latency under same task define (public open source agent & zen c
 - What would make the system easier for the next engineer?
 
 
-# Quant Related Guardrail
+# Quant Related Guardrail 🆕
  - shift(-, t-1 indexing into future rows, .fit( before a train/test split → lookahead bias                                                                       
  - inplace=True on shared DataFrames → cross-contamination between experiments                                                                                    
  - Writes to production data dirs / model artifacts / live-trading configs → protected paths                                                                      
