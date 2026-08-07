@@ -7,17 +7,11 @@
  * service. Context files (AGENTS.md / CLAUDE.md) from the checkout are plain
  * content and are injected as virtual context instead.
  */
-import {
-  type AgentSession,
-  createAgentSession,
-  DefaultResourceLoader,
-  getAgentDir,
-  type ModelRuntime,
-  resolveCliModel,
-  SessionManager,
-} from "@earendil-works/pi-coding-agent";
+import * as pi from "@earendil-works/pi-coding-agent";
+import type { AgentSession, ModelRuntime } from "@earendil-works/pi-coding-agent";
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
+import { maybeWrapPiForTracing } from "./tracing.js";
 
 const MAX_CONTEXT_CHARS = 20_000;
 
@@ -57,6 +51,14 @@ function loadCheckoutContext(cwd: string, zenRoot: string): Array<{ path: string
 }
 
 export async function createThreadSession(opts: ThreadSessionOptions): Promise<AgentSession> {
+  const {
+    createAgentSession,
+    DefaultResourceLoader,
+    getAgentDir,
+    resolveCliModel,
+    SessionManager,
+  } = await maybeWrapPiForTracing(pi);
+
   const checkoutContext = loadCheckoutContext(opts.cwd, opts.zenRoot);
 
   const loader = new DefaultResourceLoader({

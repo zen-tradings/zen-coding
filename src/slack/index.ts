@@ -10,6 +10,7 @@
 import { App } from "@slack/bolt";
 import { ModelRuntime } from "@earendil-works/pi-coding-agent";
 import { registerHandlers } from "./app";
+import { flushTracing } from "./tracing";
 import { loadConfig } from "./config";
 import { ThreadRegistry } from "./threads";
 
@@ -38,9 +39,10 @@ registerHandlers({ app, config, modelRuntime, registry, botUserId });
 setInterval(() => registry.evictIdle(config.idleMs), 60_000).unref();
 
 for (const signal of ["SIGINT", "SIGTERM"] as const) {
-  process.on(signal, () => {
+  process.on(signal, async () => {
     console.log(`\n[zen-slack] ${signal} received, disposing sessions…`);
     registry.disposeAll();
+    await flushTracing();
     process.exit(0);
   });
 }

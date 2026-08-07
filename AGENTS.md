@@ -24,9 +24,10 @@ runs in this repo. See README.md and design.md for the full picture.
 - `ZEN_LOCAL_BASE_URL` / `ZEN_LOCAL_MODELS` — self-hosted model endpoints
   (see `.pi/extensions/zen-models.ts`)
 - Braintrust tracing (opt-in, off by default): `TRACE_TO_BRAINTRUST=true`,
-  `BRAINTRUST_API_KEY`, `BRAINTRUST_PROJECT=zen-coding`. Restart pi after
-  setting these. Covers interactive sessions; the Slack backend (SDK mode)
-  needs separate wiring (see Braintrust's "Pi Coding Agent SDK" docs).
+  `BRAINTRUST_API_KEY`, `BRAINTRUST_PROJECT=zen-coding`. Restart the process
+  after setting these. Covers both interactive sessions (via
+  `@braintrust/pi-extension`) and Slack-backend sessions (via
+  `src/slack/tracing.ts`, which wraps the pi SDK with `wrapPiCodingAgentSDK`).
 
 ## Conventions
 

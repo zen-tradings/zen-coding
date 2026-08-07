@@ -58,6 +58,7 @@ benchmarking (cost/latency per task, see design.md) a matter of swapping `/model
 
 Optional hosted tracing: `@braintrust/pi-extension` (in `.pi/settings.json` packages) streams
 interactive sessions to Braintrust when `TRACE_TO_BRAINTRUST=true` + `BRAINTRUST_API_KEY` are set.
+Slack-backend (SDK) sessions are traced by `src/slack/tracing.ts` under the same env vars.
 The local JSONL traces remain the source of truth for the eval harness; Braintrust is the dashboard.
 | `modes.ts` | `/zen normal\|clarify\|plan` — clarify asks follow-up questions first; plan is read-only. |
 | `zen-models.ts` | Registers self-hosted open-source model endpoints from `ZEN_LOCAL_*` env vars. |
