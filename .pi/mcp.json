@@ -16,6 +16,17 @@
       "command": "uvx",
       "args": ["paper-search-mcp"],
       "requestTimeoutMs": 120000
+    },
+    "mintlify-docs": {
+      "url": "https://www.mintlify.com/docs/mcp",
+      "auth": false,
+      "requestTimeoutMs": 60000
+    },
+    "render": {
+      "url": "https://mcp.render.com/mcp",
+      "auth": "bearer",
+      "bearerTokenEnv": "RENDER_API_KEY",
+      "requestTimeoutMs": 60000
     }
   }
 }

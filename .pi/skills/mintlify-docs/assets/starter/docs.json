@@ -1,0 +1,29 @@
+{
+  "$schema": "https://mintlify.com/docs.json",
+  "name": "Internal Docs",
+  "theme": "mint",
+  "colors": {
+    "primary": "#0D9373"
+  },
+  "navigation": {
+    "groups": [
+      {
+        "group": "Overview",
+        "pages": ["index"]
+      },
+      {
+        "group": "Guides",
+        "pages": ["guides/example-guide"]
+      },
+      {
+        "group": "Reference",
+        "pages": ["reference/example-reference"]
+      }
+    ]
+  },
+  "footer": {
+    "socials": {
+      "github": "https://github.com/your-org"
+    }
+  }
+}

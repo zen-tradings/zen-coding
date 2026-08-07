@@ -56,6 +56,16 @@ benchmarking (cost/latency per task, see design.md) a matter of swapping `/model
 
 Extensions are TypeScript, loaded by pi without a build step. `npm run typecheck` checks them.
 
+## Skills (`.pi/skills/`)
+
+Skills are on-demand capability packages ([Agent Skills standard](https://agentskills.io));
+pi puts their descriptions in the system prompt and the agent loads the full
+instructions only when a task matches (or force with `/skill:<name>`).
+
+| Skill | Purpose |
+|---|---|
+| `mintlify-docs` | Structure, write, build, and maintain internal documentation with [Mintlify](https://mintlify.com/docs) (docs.json + MDX). Includes reference sheets (navigation schema, frontmatter, components, CLI), a starter template for scaffolding new docs sites, and workflows for validation (`mint validate`, `mint broken-links`) and push-to-deploy. Pairs with the `mintlify-docs` MCP connector below for live reference lookup. |
+
 ## Slack backend
 
 `src/slack/` implements design.md §User Interaction 1: @-mention the bot in a channel
@@ -122,6 +132,10 @@ after trust). Servers are configured in `.pi/mcp.json`:
   go in `~/.config/paper-search-mcp/.env`. Complements alphaXiv: alphaXiv gives
   AI-digested reports and library management, paper-search gives raw multi-source
   retrieval including SSRN.
+- **Mintlify docs** (`https://www.mintlify.com/docs/mcp`) — live search over the
+  official Mintlify documentation (docs.json schema, MDX components, CLI). Public,
+  no auth. Used by the `mintlify-docs` skill so docs work never relies on stale
+  knowledge of Mintlify's format.
 - **GitHub** (`https://api.githubcopilot.com/mcp/`, the official
   [github-mcp-server](https://github.com/github/github-mcp-server)) — structured
   issue/PR/repo tools: `create_issue`, `add_issue_comment`, `create_pull_request`,
