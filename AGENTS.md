@@ -23,6 +23,9 @@ runs in this repo. See README.md and design.md for the full picture.
 - GitHub MCP auth reuses `gh auth token` (no PAT needed)
 - `ZEN_LOCAL_BASE_URL` / `ZEN_LOCAL_MODELS` — self-hosted model endpoints
   (see `.pi/extensions/zen-models.ts`)
+- `WQ_BRAIN_USERNAME` / `WQ_BRAIN_PASSWORD` — WorldQuant BRAIN credentials for the
+  `wq-alpha-research` skill (`.pi/skills/wq-alpha-research`, a git submodule). Its
+  scripts also accept an untracked `credential.txt` (gitignored; never commit it).
 - Braintrust tracing (opt-in, off by default): `TRACE_TO_BRAINTRUST=true`,
   `BRAINTRUST_API_KEY`, `BRAINTRUST_PROJECT=zen-coding`. Restart the process
   after setting these. Covers both interactive sessions (via
@@ -46,7 +49,9 @@ runs in this repo. See README.md and design.md for the full picture.
 
 - `.pi/extensions/` — guardrails, observability (JSONL traces → `.zen/traces/`),
   `/zen normal|clarify|plan` modes, self-hosted model registration, zen-tools
-- `.pi/skills/`, `.pi/prompts/` — shared skills and prompt templates
+- `.pi/skills/` — shared skills (`wq-alpha-research` is a git submodule;
+  clone with `git submodule update --init`)
+- `.pi/prompts/` — shared prompt templates
 - `src/slack/` — Slack backend (pi SDK)
 - `evals/` — eval/benchmark runner work
 - `design.md` — architecture and roadmap

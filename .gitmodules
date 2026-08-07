@@ -1,0 +1,3 @@
+[submodule ".pi/skills/wq-alpha-research"]
+	path = .pi/skills/wq-alpha-research
+	url = https://github.com/zen-tradings/wq-alpha-research
