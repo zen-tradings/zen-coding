@@ -17,6 +17,11 @@
       "args": ["paper-search-mcp"],
       "requestTimeoutMs": 120000
     },
+    "docker": {
+      "command": "docker",
+      "args": ["mcp", "gateway", "run"],
+      "requestTimeoutMs": 120000
+    },
     "mintlify-docs": {
       "url": "https://www.mintlify.com/docs/mcp",
       "auth": false,

@@ -187,6 +187,13 @@ after trust). Servers are configured in `.pi/mcp.json`:
   whoever `gh` is logged in as, regardless of which Slack user drove the request. To
   restrict capabilities, append `/readonly` to the URL or scope with
   `/x/<toolset>` paths (e.g. `/x/issues`).
+- **Docker MCP Toolkit** (local stdio: `docker mcp gateway run`) — Docker Desktop's
+  MCP gateway; requires the Docker CLI with the MCP plugin (`docker mcp`). Exposes
+  the gateway's dynamic meta-tools (`mcp-find`, `mcp-add`, `mcp-exec`, …) so the
+  agent can discover and invoke catalog servers on demand; servers run as
+  containers with the gateway's secret/network isolation. Pre-enable servers with
+  `docker mcp server enable <name>` to pin a fixed toolset. No auth needed for the
+  gateway itself; individual servers may need `docker mcp secret` entries.
 
 All MCP tools are exposed through a single `mcp` proxy tool to keep the per-session
 context footprint small. MCP config resolves from this repo's working directory, so
