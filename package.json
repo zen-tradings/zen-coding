@@ -5,8 +5,8 @@
   "type": "module",
   "description": "Quant coding agent built on pi (@earendil-works/pi-coding-agent)",
   "scripts": {
-    "agent": "pi",
-    "slack": "tsx src/slack/index.ts",
+    "agent": "dotenv -- pi",
+    "slack": "dotenv -- tsx src/slack/index.ts",
     "typecheck": "tsc --noEmit"
   },
   "engines": {
@@ -23,6 +23,7 @@
   },
   "devDependencies": {
     "@types/node": "^22.10.0",
+    "dotenv-cli": "^11.0.0",
     "tsx": "^4.23.5",
     "typescript": "^5.7.0"
   }
