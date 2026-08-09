@@ -88,9 +88,12 @@ repos you work in:
 | `ZEN_GUARDRAILS_CONFIG` | `.pi/guardrails.json` inside the installed package | Guardrail rules file. Missing/unreadable rules are a hard startup error — guardrails never run silently disabled. |
 | `ZEN_TRACE_DIR` | `~/.zen/traces` | JSONL telemetry output directory (created recursively). |
 
-Protected-path rules (`.env`, `*.key`, `*.pem`, …) are matched relative to whatever
-project pi is running in, so they follow the agent into any repo; writes outside the
-current project root remain blocked.
+Protected-path rules (`.env`, `*.key`, `*.pem`, `.pi/guardrails.json`, …) are matched
+relative to whatever project pi is running in, so they follow the agent into any repo;
+writes outside the current project root remain blocked. A repo can add its own rules via
+its own `.pi/guardrails.json` — these merge **tighten-only** (deny lists union,
+`allowWritesOutsideCwd` can only narrow to `false`), so a repo can add protections but
+never weaken the base rules.
 
 Note: when running in an arbitrary repo, that repo's own project-local
 `.pi/extensions/` will also execute once the project is trusted — so declining trust

@@ -10,7 +10,8 @@
     "**/*.pem",
     "**/*.key",
     ".zen/**",
-    ".git/**"
+    ".git/**",
+    ".pi/guardrails.json"
   ],
   "allowWritesOutsideCwd": false
 }
