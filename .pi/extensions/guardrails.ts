@@ -3,12 +3,20 @@
  *
  * Starter rules live in DEFAULTS below. Project- and domain-specific rules
  * (e.g. protecting production strategy configs or research datasets) belong
- * in .pi/guardrails.json, which overrides the defaults field by field.
+ * in guardrails.json next to this extension (.pi/guardrails.json in the
+ * zen-coding package), which overrides the defaults field by field.
+ *
+ * The rules file is resolved relative to this extension file's own location
+ * (not the cwd), so guardrails work when pi runs in any repo — e.g. after a
+ * global `pi install`. Set ZEN_GUARDRAILS_CONFIG to point at a different
+ * rules file. Missing/unreadable rules are a hard error: guardrails never
+ * silently run disabled.
  */
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 import { isToolCallEventType } from "@earendil-works/pi-coding-agent";
 import { readFileSync } from "node:fs";
-import { isAbsolute, join, relative, resolve } from "node:path";
+import { dirname, isAbsolute, join, relative, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import { minimatch } from "minimatch";
 
 interface GuardrailsConfig {
@@ -29,21 +37,27 @@ const DEFAULTS: GuardrailsConfig = {
 
 const MUTATING_FILE_TOOLS = new Set(["write", "edit"]);
 
-function loadConfig(cwd: string): GuardrailsConfig {
+function defaultConfigPath(): string {
+  // <pkg>/.pi/extensions/guardrails.ts -> <pkg>/.pi/guardrails.json
+  return join(dirname(fileURLToPath(import.meta.url)), "..", "guardrails.json");
+}
+
+function loadConfig(): GuardrailsConfig {
+  const path = process.env.ZEN_GUARDRAILS_CONFIG ?? defaultConfigPath();
   try {
-    const raw = readFileSync(join(cwd, ".pi", "guardrails.json"), "utf8");
+    const raw = readFileSync(path, "utf8");
     return { ...DEFAULTS, ...(JSON.parse(raw) as Partial<GuardrailsConfig>) };
-  } catch {
-    return DEFAULTS;
+  } catch (err) {
+    throw new Error(
+      `zen-guardrails: failed to load rules from ${path} (${(err as Error).message}). ` +
+        "Refusing to run with guardrails disabled; fix the file or set ZEN_GUARDRAILS_CONFIG.",
+    );
   }
 }
 
 export default function (pi: ExtensionAPI) {
-  let config = DEFAULTS;
-
-  pi.on("session_start", async (_event, ctx) => {
-    config = loadConfig(ctx.cwd);
-  });
+  // Loaded once at extension init; fails loudly if no rules file is found.
+  const config = loadConfig();
 
   pi.on("tool_call", async (event, ctx) => {
     if (isToolCallEventType("bash", event)) {

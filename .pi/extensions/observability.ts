@@ -1,7 +1,11 @@
 /**
  * zen-coding observability: writes a JSONL trace of agent activity to
- * .zen/traces/<sessionId>.jsonl — turn timings, tool calls with latency,
+ * <traceDir>/<sessionId>.jsonl — turn timings, tool calls with latency,
  * per-message token usage and cost, and model switches.
+ *
+ * <traceDir> defaults to ~/.zen/traces (global, so traces don't scatter
+ * .zen/ directories into every repo the agent touches); override with
+ * ZEN_TRACE_DIR. The directory is created recursively if missing.
  *
  * The full conversation transcript already lives in pi's session files
  * (~/.pi/agent/sessions/); these traces add the timing/cost telemetry
@@ -9,6 +13,7 @@
  */
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 import { appendFileSync, mkdirSync } from "node:fs";
+import { homedir } from "node:os";
 import { join } from "node:path";
 
 const MAX_FIELD_CHARS = 4000;
@@ -40,7 +45,7 @@ export default function (pi: ExtensionAPI) {
   };
 
   pi.on("session_start", async (_event, ctx) => {
-    const dir = join(ctx.cwd, ".zen", "traces");
+    const dir = process.env.ZEN_TRACE_DIR ?? join(homedir(), ".zen", "traces");
     try {
       mkdirSync(dir, { recursive: true });
       tracePath = join(dir, `${ctx.sessionManager.getSessionId()}.jsonl`);
