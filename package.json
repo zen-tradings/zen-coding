@@ -4,6 +4,10 @@
   "private": true,
   "type": "module",
   "description": "Quant coding agent built on pi (@earendil-works/pi-coding-agent)",
+  "keywords": ["pi-package"],
+  "pi": {
+    "extensions": ["./.pi/extensions"]
+  },
   "scripts": {
     "agent": "dotenv -- pi",
     "slack": "dotenv -- tsx src/slack/index.ts",
@@ -13,18 +17,23 @@
     "node": ">=22"
   },
   "dependencies": {
-    "@earendil-works/pi-ai": "^0.84.0",
-    "@earendil-works/pi-coding-agent": "^0.84.0",
     "@slack/bolt": "^5.0.0",
     "@slack/web-api": "^8.0.0",
     "braintrust": "^3.27.0",
-    "minimatch": "^10.2.5",
-    "typebox": "1.3.7"
+    "minimatch": "^10.2.5"
+  },
+  "peerDependencies": {
+    "@earendil-works/pi-ai": "*",
+    "@earendil-works/pi-coding-agent": "*",
+    "typebox": "*"
   },
   "devDependencies": {
+    "@earendil-works/pi-ai": "^0.84.0",
+    "@earendil-works/pi-coding-agent": "^0.84.0",
     "@types/node": "^22.10.0",
     "dotenv-cli": "^11.0.0",
     "tsx": "^4.23.5",
+    "typebox": "1.3.7",
     "typescript": "^5.7.0"
   }
 }

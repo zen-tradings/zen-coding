@@ -54,7 +54,7 @@ benchmarking (cost/latency per task, see design.md) a matter of swapping `/model
 | Extension | Purpose |
 |---|---|
 | `guardrails.ts` | Blocks denied bash patterns and writes to protected paths before any tool executes. Rules in `.pi/guardrails.json`. |
-| `observability.ts` | JSONL telemetry per session → `.zen/traces/<sessionId>.jsonl`: turn/tool latency, token usage, cost, model switches. Full transcripts live in pi's session files. |
+| `observability.ts` | JSONL telemetry per session → `~/.zen/traces/<sessionId>.jsonl` (override: `ZEN_TRACE_DIR`): turn/tool latency, token usage, cost, model switches. Full transcripts live in pi's session files. |
 
 Optional hosted tracing: `@braintrust/pi-extension` (in `.pi/settings.json` packages) streams
 interactive sessions to Braintrust when `TRACE_TO_BRAINTRUST=true` + `BRAINTRUST_API_KEY` are set.
@@ -65,6 +65,39 @@ The local JSONL traces remain the source of truth for the eval harness; Braintru
 | `zen-tools/` | `exa_search` (web/code/paper search). GitHub goes through `gh` + bash for now; proprietary data connectors land here. |
 
 Extensions are TypeScript, loaded by pi without a build step. `npm run typecheck` checks them.
+
+## Install globally
+
+This repo is also a pi package (`pi` manifest in `package.json`), so the zen layer —
+guardrails, observability, `/zen` modes, zen-models, zen-tools — can be installed once
+and loaded when running `pi` inside **any** repo:
+
+```bash
+pi install git:github.com/zen-tradings/zen-coding  # or: pi install /path/to/zen-coding
+```
+
+pi clones the repo, runs `npm install` (third-party runtime deps like `minimatch`;
+the pi runtime packages are `peerDependencies` since pi bundles them for extensions),
+and loads `.pi/extensions/` in every session.
+
+Global installs resolve their state outside the cwd, so nothing is scattered into the
+repos you work in:
+
+| Env var | Default | Purpose |
+|---|---|---|
+| `ZEN_GUARDRAILS_CONFIG` | `.pi/guardrails.json` inside the installed package | Guardrail rules file. Missing/unreadable rules are a hard startup error — guardrails never run silently disabled. |
+| `ZEN_TRACE_DIR` | `~/.zen/traces` | JSONL telemetry output directory (created recursively). |
+
+Protected-path rules (`.env`, `*.key`, `*.pem`, `.pi/guardrails.json`, …) are matched
+relative to whatever project pi is running in, so they follow the agent into any repo;
+writes outside the current project root remain blocked. A repo can add its own rules via
+its own `.pi/guardrails.json` — these merge **tighten-only** (deny lists union,
+`allowWritesOutsideCwd` can only narrow to `false`), so a repo can add protections but
+never weaken the base rules.
+
+Note: when running in an arbitrary repo, that repo's own project-local
+`.pi/extensions/` will also execute once the project is trusted — so declining trust
+for unfamiliar codebases is the safe default.
 
 ## Skills (`.pi/skills/`)
 
@@ -154,6 +187,13 @@ after trust). Servers are configured in `.pi/mcp.json`:
   whoever `gh` is logged in as, regardless of which Slack user drove the request. To
   restrict capabilities, append `/readonly` to the URL or scope with
   `/x/<toolset>` paths (e.g. `/x/issues`).
+- **Docker MCP Toolkit** (local stdio: `docker mcp gateway run`) — Docker Desktop's
+  MCP gateway; requires the Docker CLI with the MCP plugin (`docker mcp`). Exposes
+  the gateway's dynamic meta-tools (`mcp-find`, `mcp-add`, `mcp-exec`, …) so the
+  agent can discover and invoke catalog servers on demand; servers run as
+  containers with the gateway's secret/network isolation. Pre-enable servers with
+  `docker mcp server enable <name>` to pin a fixed toolset. No auth needed for the
+  gateway itself; individual servers may need `docker mcp secret` entries.
 
 All MCP tools are exposed through a single `mcp` proxy tool to keep the per-session
 context footprint small. MCP config resolves from this repo's working directory, so
