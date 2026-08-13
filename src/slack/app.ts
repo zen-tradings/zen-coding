@@ -7,6 +7,7 @@ import type { App } from "@slack/bolt";
 import type { WebClient } from "@slack/web-api";
 import type { AgentSessionEvent, ModelRuntime } from "@earendil-works/pi-coding-agent";
 import { join } from "node:path";
+import { redact } from "../redact";
 import { createThreadSession } from "./agent";
 import type { SlackBackendConfig } from "./config";
 import { slackTextToPlain } from "./markdown";
@@ -88,7 +89,8 @@ function describeToolCall(toolName: string, args: unknown): string {
           ? input.pattern
           : "";
   const compact = detail.replace(/\s+/g, " ").trim();
-  return compact ? `${toolName}: ${compact.slice(0, 90)}` : toolName;
+  const safe = redact(compact) as string;
+  return compact ? `${toolName}: ${safe.slice(0, 90)}` : toolName;
 }
 
 export function routeSessionEvents(live: LiveThread): (event: AgentSessionEvent) => void {
@@ -122,11 +124,15 @@ export function registerHandlers(deps: HandlerDeps): void {
   const { app, config, modelRuntime, registry, botUserId } = deps;
   const seen = new SeenEvents();
 
-  async function ensureLiveThread(incoming: Incoming, streamer: ThreadStreamer): Promise<LiveThread> {
+  async function ensureLiveThread(
+    incoming: Incoming,
+    streamer: ThreadStreamer,
+  ): Promise<{ live: LiveThread; note?: string }> {
     const existing = registry.getLive(incoming.key);
-    if (existing) return existing;
+    if (existing) return { live: existing };
 
     let persisted = registry.getPersisted(incoming.key);
+    let note: string | undefined;
     if (!persisted) {
       const repo = parseRepoRef(incoming.text);
       let workdir = config.defaultCwd;
@@ -134,13 +140,17 @@ export function registerHandlers(deps: HandlerDeps): void {
         const safeKey = incoming.key.replace(/[^a-zA-Z0-9._-]/g, "_");
         workdir = join(config.workspacesDir, safeKey, repo.name);
         streamer.setStatus(`cloning ${repo.owner}/${repo.name}${repo.branch ? `@${repo.branch}` : ""}`);
-        await ensureWorkspace(repo, workdir, config.cloneDepth);
+        const fallback = await ensureWorkspace(repo, workdir, config.cloneDepth);
+        // Status lines are transient (throttled chat.update); keep the note
+        // for the final message instead.
+        if (fallback) note = `${repo.owner}/${repo.name}: ${fallback}`;
       }
       persisted = { workdir, repo };
       registry.persist(incoming.key, persisted);
     } else if (persisted.repo) {
       // Refresh a resumed checkout best-effort before the agent works on it.
-      await ensureWorkspace(persisted.repo, persisted.workdir, config.cloneDepth);
+      const fallback = await ensureWorkspace(persisted.repo, persisted.workdir, config.cloneDepth);
+      if (fallback) note = `${persisted.repo.owner}/${persisted.repo.name}: ${fallback}`;
     }
 
     streamer.setStatus("starting session");
@@ -164,7 +174,7 @@ export function registerHandlers(deps: HandlerDeps): void {
     if (session.sessionFile && session.sessionFile !== persisted.sessionFile) {
       registry.persist(incoming.key, { ...persisted, sessionFile: session.sessionFile });
     }
-    return live;
+    return { live, note };
   }
 
   async function runPrompt(incoming: Incoming): Promise<void> {
@@ -177,8 +187,9 @@ export function registerHandlers(deps: HandlerDeps): void {
     }
 
     let live: LiveThread;
+    let note: string | undefined;
     try {
-      live = await ensureLiveThread(incoming, streamer);
+      ({ live, note } = await ensureLiveThread(incoming, streamer));
     } catch (err) {
       await streamer.finalize(`❌ workspace setup failed: ${(err as Error).message}`);
       return;
@@ -189,9 +200,10 @@ export function registerHandlers(deps: HandlerDeps): void {
       live.lastActivity = Date.now();
       try {
         await live.session.prompt(incoming.text);
-        await streamer.finalize();
+        await streamer.finalize(note ? `⚠️ ${note}` : undefined);
       } catch (err) {
-        await streamer.finalize(`❌ ${(err as Error).message}`);
+        const errText = `❌ ${(err as Error).message}`;
+        await streamer.finalize(note ? `${errText}\n\n⚠️ ${note}` : errText);
       } finally {
         live.streamer = undefined;
         live.lastActivity = Date.now();
