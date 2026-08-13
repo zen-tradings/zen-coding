@@ -49,6 +49,18 @@ export function loadConfig(): SlackBackendConfig {
     ? resolve(process.env.ZEN_SLACK_WORKSPACES)
     : resolve(zenRoot, ".zen", "slack", "workspaces");
 
+  const idleMinutes = parseNonNegativeInt(
+    "ZEN_SLACK_IDLE_MINUTES", process.env.ZEN_SLACK_IDLE_MINUTES, 60);
+  if (idleMinutes === 0) {
+    throw new Error(
+      'Invalid ZEN_SLACK_IDLE_MINUTES: "0" — sessions would be evicted immediately; use a positive value or unset it.',
+    );
+  }
+  const idleMs = idleMinutes * 60_000;
+  if (!Number.isSafeInteger(idleMs)) {
+    throw new Error(`Invalid ZEN_SLACK_IDLE_MINUTES: "${process.env.ZEN_SLACK_IDLE_MINUTES}" — value too large.`);
+  }
+
   return {
     botToken,
     appToken,
@@ -59,8 +71,8 @@ export function loadConfig(): SlackBackendConfig {
       ? resolve(process.env.ZEN_SLACK_DEFAULT_CWD)
       : zenRoot,
     modelSpec: process.env.ZEN_SLACK_MODEL || undefined,
-    cloneDepth: Number(process.env.ZEN_SLACK_CLONE_DEPTH ?? 0) || 0,
-    idleMs: (Number(process.env.ZEN_SLACK_IDLE_MINUTES ?? 60) || 60) * 60_000,
+    cloneDepth: parseNonNegativeInt("ZEN_SLACK_CLONE_DEPTH", process.env.ZEN_SLACK_CLONE_DEPTH, 0),
+    idleMs,
     allowedUsers: new Set(
       (process.env.ZEN_SLACK_ALLOWED_USERS ?? "")
         .split(",")
@@ -68,4 +80,19 @@ export function loadConfig(): SlackBackendConfig {
         .filter(Boolean),
     ),
   };
+}
+
+/** Parse a non-negative integer env var; throw an actionable error instead of
+ * silently coercing garbage (e.g. "abc", "-1", "1.5") to a default. */
+function parseNonNegativeInt(name: string, raw: string | undefined, fallback: number): number {
+  if (raw === undefined || raw.trim() === "") return fallback;
+  const trimmed = raw.trim();
+  if (!/^\d+$/.test(trimmed)) {
+    throw new Error(`Invalid ${name}: "${raw}" — expected a non-negative integer.`);
+  }
+  const value = Number(trimmed);
+  if (!Number.isSafeInteger(value)) {
+    throw new Error(`Invalid ${name}: "${raw}" — number is too large.`);
+  }
+  return value;
 }

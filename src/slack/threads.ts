@@ -6,7 +6,7 @@
  * so a thread picks its session back up across evictions and restarts.
  */
 import type { AgentSession } from "@earendil-works/pi-coding-agent";
-import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { closeSync, fsyncSync, mkdirSync, openSync, readFileSync, renameSync, unlinkSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
 import type { ThreadStreamer } from "./streamer";
 import type { RepoRef } from "./workspace";
@@ -45,11 +45,33 @@ export class ThreadRegistry {
 
   persist(key: string, state: PersistedThread): void {
     this.persisted[key] = state;
+    // Write-then-rename so a crash mid-write can't corrupt the registry, and
+    // fsync the tmp file so power loss can't rename an empty file over a good
+    // one. The PID in the name keeps concurrent bot instances from colliding.
+    const tmpFile = `${this.stateFile}.${process.pid}.tmp`;
+    let fd: number | undefined;
     try {
       mkdirSync(dirname(this.stateFile), { recursive: true });
-      writeFileSync(this.stateFile, `${JSON.stringify(this.persisted, null, 2)}\n`);
+      fd = openSync(tmpFile, "w");
+      writeFileSync(fd, `${JSON.stringify(this.persisted, null, 2)}\n`);
+      fsyncSync(fd);
+      closeSync(fd);
+      fd = undefined;
+      renameSync(tmpFile, this.stateFile);
     } catch (err) {
       console.error("[zen-slack] failed to persist thread state:", err);
+      if (fd !== undefined) {
+        try {
+          closeSync(fd);
+        } catch {
+          // Best-effort cleanup.
+        }
+      }
+      try {
+        unlinkSync(tmpFile);
+      } catch {
+        // Nothing to clean up.
+      }
     }
   }
 
