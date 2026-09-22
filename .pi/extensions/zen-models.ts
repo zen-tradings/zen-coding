@@ -13,10 +13,31 @@
  *   ZEN_LOCAL_API_KEY         optional; keyless local servers ignore it (defaults to "local")
  *   ZEN_LOCAL_CONTEXT_WINDOW  optional, defaults to 128000
  *   ZEN_LOCAL_MAX_TOKENS      optional, defaults to 8192
+ *   ZEN_OPENROUTER_MAX_TOKENS  optional per-request output cap, defaults to 12288
  */
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 
 export default function (pi: ExtensionAPI) {
+  const configuredCap = process.env.ZEN_OPENROUTER_MAX_TOKENS;
+  const parsedCap = Number(configuredCap);
+  const openRouterCap = configuredCap && /^\d+$/.test(configuredCap) && Number.isSafeInteger(parsedCap) && parsedCap > 0
+    ? parsedCap
+    : 12288;
+
+  pi.on("before_provider_request", (event, ctx) => {
+    if (ctx.model?.provider !== "openrouter" || !event.payload || typeof event.payload !== "object") return;
+
+    const payload = event.payload as Record<string, unknown>;
+    const maxTokens = Math.min(ctx.model.maxTokens, openRouterCap);
+    const capped = { ...payload };
+    for (const field of ["max_tokens", "max_completion_tokens"] as const) {
+      if (typeof payload[field] === "number") {
+        capped[field] = Math.min(payload[field], maxTokens);
+      }
+    }
+    return capped;
+  });
+
   const baseUrl = process.env.ZEN_LOCAL_BASE_URL;
   if (!baseUrl) return;
 
