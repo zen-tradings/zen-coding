@@ -38,8 +38,9 @@ runs in this repo. See README.md and design.md for the full picture.
   `npm run typecheck` must pass.
 - Guardrails (denied bash patterns, protected paths) are enforced by
   `.pi/extensions/guardrails.ts` from `.pi/guardrails.json` — do not bypass them.
-- `.zen/` is runtime state (telemetry traces); never write to or read from it as a
-  source of truth, and never commit it.
+- `.zen/` is runtime state (Slack backend thread map and checkouts); never write to or
+  read from it as a source of truth, and never commit it. Telemetry traces go to
+  `~/.zen/traces/` (override: `ZEN_TRACE_DIR`), outside the repo.
 - `.pi/npm/` is machine-local (installed packages) — never commit.
 - MCP servers are configured in `.pi/mcp.json` at the repo root; all MCP tools go
   through the single `mcp` proxy tool.
@@ -47,11 +48,13 @@ runs in this repo. See README.md and design.md for the full picture.
 
 ## Project layout
 
-- `.pi/extensions/` — guardrails, observability (JSONL traces → `.zen/traces/`),
+- `.pi/extensions/` — guardrails, observability (JSONL traces → `~/.zen/traces/`),
   `/zen normal|clarify|plan` modes, self-hosted model registration, zen-tools
 - `.pi/skills/` — shared skills (`wq-alpha-research` is a git submodule;
   clone with `git submodule update --init`)
 - `.pi/prompts/` — shared prompt templates
 - `src/slack/` — Slack backend (pi SDK)
-- `evals/` — eval/benchmark runner work
+- `evals/`, `scripts/` — eval harness (`run_eval.py`, `aggregate.py`) and case definitions
+- `docs/` — deep-dive docs (Slack internals, MCP connectors, install-anywhere, evals);
+  README.md is the user-facing front page — keep reference detail in `docs/`
 - `design.md` — architecture and roadmap
