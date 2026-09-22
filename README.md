@@ -1,6 +1,6 @@
 # zen-coding
 
-**A coding agent for quantitative research.**
+**A coding agent for quantitative research and development.**
 
 zen-coding is a terminal and Slack coding agent with quant workflows built in — alpha
 research, beta audits, portfolio construction, backtest review, paper replication — and
