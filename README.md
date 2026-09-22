@@ -46,6 +46,11 @@ Open-source models are first-class. Two ways to use them:
 - **Self-hosted** (vLLM / SGLang / Ollama / LM Studio / llama.cpp): set
   `ZEN_LOCAL_BASE_URL` and `ZEN_LOCAL_MODELS` — see `.pi/extensions/zen-models.ts`.
 
+OpenRouter requests have a default output cap of 12288 tokens. Set
+`ZEN_OPENROUTER_MAX_TOKENS` to a positive integer to override it. The effective
+per-request limit is the lower of this cap and the selected model's `maxTokens`;
+invalid values use the default. Other providers are unaffected.
+
 Closed models (Anthropic/OpenAI/Google) work the same way, which makes cross-model
 benchmarking (cost/latency per task, see design.md) a matter of swapping `/model`.
 
