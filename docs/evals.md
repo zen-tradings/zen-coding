@@ -3,7 +3,9 @@
 zen-coding ships a small, reproducible benchmark harness for measuring the agent
 against a fixed set of coding tasks — and for comparing models on the same tasks.
 
-Requirements: Python 3, `git`, and a working `npx pi` (i.e. `npm install` has run).
+Requirements: Python 3, `git`, and `npm install` run in this repository — the harness
+invokes `npx pi`, i.e. the pi version pinned in `package.json`, so results are tied to a
+known pi release.
 
 ## Concepts
 
@@ -25,6 +27,15 @@ For every case the runner makes a **fresh checkout**, runs pi headlessly
 assertions. Pass criteria are fixed before the run — never adjust assertions to fit
 results. `smoke-hello` is the one case that works out of the box; it only proves the
 loop runs.
+
+Each attempt gets an **isolated pi config directory** (`PI_CODING_AGENT_DIR` →
+`attempt-k/pi-home/`), seeded only with your auth and model settings — no sessions and
+no saved trust decisions — so runs are reproducible and never touch your real
+`~/.pi/agent/`. Packages listed in your user `settings.json` are re-installed fresh into
+that directory on startup. If that list includes `git:github.com/zen-tradings/zen-coding`,
+the zen extensions under test are the ones **published at the configured ref**, not your
+local working tree; to evaluate local changes, push them first or point the package at a
+local path.
 
 ## Running
 

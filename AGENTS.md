@@ -7,11 +7,14 @@ runs in this repo. See README.md and design.md for the full picture.
 ## Commands
 
 - `npm install` — install dependencies (Node >= 22)
-- `npm run agent` — launch the pi TUI with zen extensions
+- `pi` (run in the repo root) — launch the pi TUI with zen extensions; `npm run agent`
+  does the same with the pi version pinned in `package.json`
 - `npm run typecheck` — type-check the TS extensions (`tsc --noEmit`); run this after
   editing anything in `.pi/extensions/` or `src/`
 - `npm run slack` — start the Slack backend (Slack threads ↔ pi sessions)
-- Headless: `npx pi -p "..."`, `npx pi --mode json -p "..."`, `npx pi --mode rpc`
+- Headless: `pi -p "..."`, `pi --mode json -p "..."`, `pi --mode rpc` — non-interactive
+  modes skip the trust prompt, so pass `-a` (or trust the project once interactively)
+  for the zen extensions to load
 
 ## Environment variables
 

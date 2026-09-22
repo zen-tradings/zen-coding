@@ -1,21 +1,48 @@
 # Using zen-coding in any repository
 
-zen-coding is a **pi package**: besides running as a project, its extension layer
-(guardrails, observability, `/zen` modes, self-hosted model registration, zen-tools)
-can be installed once and loaded whenever you run `pi` in *any* repository.
+zen-coding is a [pi package](https://github.com/earendil-works/pi/blob/main/packages/coding-agent/docs/packages.md):
+besides running as a project, its extension layer can be installed once and loaded
+whenever you run `pi` in *any* repository.
 
 ## Install
 
 ```bash
-pi install git:github.com/zen-tradings/zen-coding
-# or, from a local clone:
-pi install /path/to/zen-coding
+pi install git:github.com/zen-tradings/zen-coding        # user-wide (~/.pi/agent/git/)
+pi install git:github.com/zen-tradings/zen-coding@<ref>  # pin a tag or commit
+pi install git:github.com/zen-tradings/zen-coding -l     # project-local (.pi/git/), shareable via .pi/settings.json
+pi install /path/to/zen-coding                           # from a local clone, without copying
 ```
 
-pi clones the repository, runs `npm install` for third-party runtime dependencies
-(such as `minimatch`), and registers `.pi/extensions/` to load in every session. The
-pi runtime packages themselves are declared as `peerDependencies` — pi already bundles
-them for extensions, so nothing is duplicated.
+pi clones the repository, runs `npm install --omit=dev` for third-party runtime
+dependencies (such as `minimatch`), and registers the package in your settings so its
+extensions load in every session. The pi runtime packages themselves are declared as
+`peerDependencies` — pi already bundles them for extensions, so nothing is duplicated.
+
+Manage it like any other pi package:
+
+```bash
+pi list                     # show installed packages
+pi update --extensions      # update packages (pinned @ref stays pinned)
+pi remove git:github.com/zen-tradings/zen-coding
+```
+
+## What a global install includes
+
+The package manifest (`pi` key in `package.json`) currently declares **extensions
+only** — `.pi/extensions/`:
+
+| Extension | You get |
+|---|---|
+| `guardrails.ts` | Denied shell patterns, protected paths, no writes outside the project |
+| `observability.ts` | JSONL traces of latency, tokens, and cost per session |
+| `modes.ts` | `/zen` modes: `normal`, `clarify`, `plan` |
+| `zen-models.ts` | Self-hosted model registration from `ZEN_LOCAL_*` |
+| `zen-tools/` | `exa_search` (needs `EXA_API_KEY`) |
+
+The quant slash commands (`.pi/prompts/`), skills (`.pi/skills/`), and MCP connectors
+(`.pi/mcp.json`) are *project* resources: pi discovers them when you run it inside the
+zen-coding repository. To use them elsewhere today, run `pi` from a zen-coding checkout,
+or copy the prompt files into `~/.pi/agent/prompts/`.
 
 ## Where state lives
 
@@ -46,12 +73,10 @@ A repository can therefore add protections but never weaken the base rules. A ma
 repo-local rules file is also a hard error — silently ignoring intended protections is
 worse than failing loudly.
 
-## Trust and third-party extensions
+## Trust
 
-When pi runs in a repository, that repository's *own* `.pi/extensions/` will also
-execute once you trust the project. Declining trust for unfamiliar codebases is the safe
-default; zen-coding's guardrails still load either way.
-
-## Updating
-
-Re-run `pi install` with the same source to pull the latest version.
+Packages installed user-wide load in every session without a prompt. When pi runs in a
+repository that has its *own* `.pi/` resources, it asks you to trust that project before
+loading them (interactive mode) or skips them unless trusted (`-p`, `--mode json`,
+`--mode rpc`; override with `-a` / `--approve`). Declining trust for unfamiliar
+codebases is the safe default — zen-coding's guardrails, being user-wide, still apply.

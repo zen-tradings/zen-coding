@@ -7,9 +7,11 @@ research, beta audits, portfolio construction, backtest review, paper replicatio
 guardrails against the mistakes that quietly ruin research code. It runs on any LLM you
 choose, open-source or closed, hosted or on your own hardware.
 
-It is built on [pi](https://github.com/earendil-works/pi), an open-source coding-agent
-harness: pi provides the agent loop, terminal UI, sessions, and model providers;
-zen-coding adds the quant layer as a set of extensions, skills, and prompt templates.
+It is a layer on top of [pi](https://github.com/earendil-works/pi), an open-source
+coding-agent harness. pi provides the agent loop, terminal UI, sessions, and model
+providers; zen-coding adds the quant layer as pi resources — extensions, prompt
+templates, skills, and MCP configuration — that pi discovers automatically when you run
+it in this repository. Nothing is forked or wrapped: the command you run is `pi`.
 
 ## Features
 
@@ -39,21 +41,31 @@ zen-coding adds the quant layer as a set of extensions, skills, and prompt templ
 Requires **Node.js ≥ 22**.
 
 ```bash
+# 1. Install pi (once)
+npm install -g --ignore-scripts @earendil-works/pi-coding-agent
+#    or: curl -fsSL https://pi.dev/install.sh | sh
+
+# 2. Get zen-coding
 git clone https://github.com/zen-tradings/zen-coding.git
 cd zen-coding
 git submodule update --init   # optional: pulls the wq-alpha-research skill
-npm install
+npm install                   # extension dependencies
 
-# The project default model is Kimi K3 on Fireworks. Set that key, or any other
-# provider's key and switch with /model once inside.
+# 3. Set a provider key. The project default model is Kimi K3 on Fireworks;
+#    any other provider works too — switch with /model once inside.
 export FIREWORKS_API_KEY=...
 # export DEEPSEEK_API_KEY=... ANTHROPIC_API_KEY=... GROQ_API_KEY=... OPENROUTER_API_KEY=...
 
-npm run agent
+# 4. Run pi inside the repository
+pi
 ```
 
-On first launch pi asks you to trust the project — project-local extensions are code,
-so this is a deliberate step. Then:
+Prefer not to install pi globally? `npm run agent` runs the pi version pinned in
+`package.json` instead — everything else is identical.
+
+On first launch pi asks you to trust the project: project-local extensions are code, so
+this is a deliberate step. Trust it and zen-coding's extensions, commands, skills, and
+connectors load. Then:
 
 ```
 /model                          pick a model
@@ -65,7 +77,8 @@ so this is a deliberate step. Then:
 
 ### Interactive (terminal)
 
-`npm run agent` opens the pi terminal UI with zen-coding loaded.
+Run `pi` in the repository root (or `npm run agent`) to open pi's terminal UI with
+zen-coding loaded.
 
 **Modes** — `/zen <mode>` changes how the agent approaches a task:
 
@@ -95,21 +108,29 @@ after the command:
 ### Headless
 
 ```bash
-npx pi -p "explain src/foo.py"        # one-shot, prints the result
-npx pi --mode json -p "..."           # streamed JSON events, for pipelines
-npx pi --mode rpc                     # JSON protocol over stdin/stdout, for embedding
+pi -p "explain src/foo.py"            # one-shot, prints the result
+pi --mode json -p "..."               # streamed JSON events, for pipelines
+pi --mode rpc                         # JSON protocol over stdin/stdout, for embedding
 ```
+
+Non-interactive modes never show the trust prompt. Trust the project once
+interactively, or pass `-a` / `--approve`, so the zen extensions load; otherwise pi
+runs with its defaults only (see pi's
+[security notes](https://github.com/earendil-works/pi/blob/main/packages/coding-agent/docs/security.md)).
 
 ### In any repository
 
-Install the zen layer once and it loads whenever you run `pi`, in any project:
+zen-coding is also a [pi package](https://github.com/earendil-works/pi/blob/main/packages/coding-agent/docs/packages.md).
+Install it once and the extension layer loads whenever you run `pi`, in any project:
 
 ```bash
 pi install git:github.com/zen-tradings/zen-coding
 ```
 
-Guardrails, traces, modes, and tools follow you; nothing is written into the
-repositories you work in. Details: [docs/install-anywhere.md](docs/install-anywhere.md).
+Guardrails, traces, `/zen` modes, self-hosted models, and `exa_search` follow you;
+nothing is written into the repositories you work in. The quant slash commands, skills,
+and MCP connectors are project resources — run `pi` inside this repository to use them.
+Details: [docs/install-anywhere.md](docs/install-anywhere.md).
 
 ## Models
 
@@ -246,7 +267,7 @@ compare models on identical tasks. Full guide: [docs/evals.md](docs/evals.md).
 ```
                  ┌──────────────┐   ┌──────────────┐   ┌──────────────┐
   surfaces       │ Terminal UI  │   │  Slack bot   │   │ Headless /   │
-                 │  npm run agent│   │ npm run slack│   │ eval harness │
+                 │      pi      │   │ npm run slack│   │ eval harness │
                  └──────┬───────┘   └──────┬───────┘   └──────┬───────┘
                         └──────────────────┼──────────────────┘
                                            ▼
@@ -258,9 +279,10 @@ compare models on identical tasks. Full guide: [docs/evals.md](docs/evals.md).
   harness        pi (@earendil-works/pi-coding-agent)  — agent loop, sessions, providers
 ```
 
-The same extensions load on every surface, so the quant layer is built once and shared.
-pi is a pinned npm dependency, not a fork: upgrades are a version bump. Design notes and
-rationale live in [design.md](design.md).
+zen-coding is one layer on top of pi. The same resources load on every surface, so the
+quant layer is built once and shared. pi itself is an upstream dependency — pinned in
+`package.json` for `npm run agent` and type-checking — never a fork, so upgrading pi is
+a version bump. Design notes and rationale live in [design.md](design.md).
 
 ### Roadmap
 
@@ -276,7 +298,7 @@ rationale live in [design.md](design.md).
 
 ```bash
 npm run typecheck     # tsc --noEmit over the extensions and Slack backend
-npm run agent         # run the agent against this repository
+npm run agent         # run the pinned pi version against this repository
 ```
 
 Extensions are TypeScript loaded by pi without a build step. Keep them dependency-light
