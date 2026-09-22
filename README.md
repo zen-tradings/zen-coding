@@ -12,22 +12,6 @@ coding-agent harness: pi provides the agent loop, terminal UI, sessions, and mod
 providers; zen-coding adds extensions, prompt templates, skills, and MCP configuration
 that pi discovers when you run it in this repository. The command you run is `pi`.
 
-## Features
-
-- **Quant workflows as slash commands** — `/alpha`, `/beta-audit`, `/portfolio`,
-  `/fundamental`, `/paper-replicate`, `/audit`, `/backtest`, each a rigorous
-  step-by-step procedure rather than a one-line prompt.
-- **Guardrails at the tool boundary** — destructive shell commands blocked, secrets and
-  protected paths unwritable, rules that repositories can only tighten.
-- **Any model** — DeepSeek, Kimi, Qwen, GLM, Groq, Fireworks, OpenRouter, Anthropic,
-  OpenAI, Google, or a self-hosted vLLM / Ollama endpoint; switch with `/model`.
-- **Research connectors and skills** — alphaXiv, multi-source paper search, GitHub,
-  Docker MCP Toolkit, Render, Mintlify via MCP; WorldQuant BRAIN alpha research as a skill.
-- **Slack bot** — @-mention with a GitHub link; the agent clones the repo and streams
-  its reply into the thread.
-- **Observability and evals** — JSONL traces of latency, tokens, and cost per session;
-  optional Braintrust; a reproducible eval harness for scoring models on identical tasks.
-
 ## Quick start
 
 Requires **Node.js ≥ 22**.
@@ -58,6 +42,22 @@ in `package.json`, if you prefer not to install pi globally.
 /zen clarify                    ask clarifying questions before acting
 /alpha short-term reversal in small caps, conditioned on volume
 ```
+## Features
+
+- **Quant workflows as slash commands** — `/alpha`, `/beta-audit`, `/portfolio`,
+  `/fundamental`, `/paper-replicate`, `/audit`, `/backtest`, each a rigorous
+  step-by-step procedure rather than a one-line prompt.
+- **Guardrails at the tool boundary** — destructive shell commands blocked, secrets and
+  protected paths unwritable, rules that repositories can only tighten.
+- **Any model** — DeepSeek, Kimi, Qwen, GLM, Groq, Fireworks, OpenRouter, Anthropic,
+  OpenAI, Google, or a self-hosted vLLM / Ollama endpoint; switch with `/model`.
+- **Research connectors and skills** — alphaXiv, multi-source paper search, GitHub,
+  Docker MCP Toolkit, Render, Mintlify via MCP; WorldQuant BRAIN alpha research as a skill.
+- **Slack bot** — @-mention with a GitHub link; the agent clones the repo and streams
+  its reply into the thread.
+- **Observability and evals** — JSONL traces of latency, tokens, and cost per session;
+  optional Braintrust; a reproducible eval harness for scoring models on identical tasks.
+
 
 ## Usage
 
