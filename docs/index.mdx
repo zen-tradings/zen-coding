@@ -55,7 +55,7 @@ export const TypingTerminal = () => {
   )
 }
 
-<main className="mx-auto max-w-6xl px-6 pb-24 pt-16 sm:pt-24">
+<div className="mx-auto max-w-6xl px-6 pb-24 pt-16 sm:pt-24">
   <section className="mx-auto max-w-3xl text-center">
     <p className="text-sm font-semibold uppercase tracking-[0.22em] text-blue-300">Zen Coding</p>
     <h1 className="mt-5 text-4xl font-semibold tracking-tight text-white sm:text-6xl">
@@ -83,7 +83,7 @@ export const TypingTerminal = () => {
       <p className="text-sm font-semibold uppercase tracking-[0.2em] text-blue-300">One workflow</p>
       <h2 className="mt-3 text-3xl font-semibold tracking-tight text-white">Build, test, and operate with less friction.</h2>
     </div>
-    <Columns cols={2}>
+    <CardGroup cols={2}>
       <Card title="Install anywhere" icon="terminal" href="/install-anywhere">
         Bring the Zen extension layer into any repository.
       </Card>
@@ -96,6 +96,6 @@ export const TypingTerminal = () => {
       <Card title="Operate from Slack" icon="slack" href="/slack">
         Map Slack threads to persistent agent sessions.
       </Card>
-    </Columns>
+    </CardGroup>
   </section>
-</main>
+</div>
