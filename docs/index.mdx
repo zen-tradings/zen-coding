@@ -1,7 +1,7 @@
 ---
 title: "A coding agent for quantitative research"
 description: "A quantitative research coding agent built on pi."
-mode: "custom"
+mode: "wide"
 ---
 
 export const TypingTerminal = () => {
@@ -55,31 +55,26 @@ export const TypingTerminal = () => {
   )
 }
 
-<div className="mx-auto max-w-6xl px-6 pb-24 pt-16 sm:pt-24">
-  <section className="mx-auto max-w-3xl text-center">
-    <p className="text-sm font-semibold uppercase tracking-[0.22em] text-blue-300">Zen Coding</p>
-    <h1 className="mt-5 text-4xl font-semibold tracking-tight text-white sm:text-6xl">
-      Quant research, from idea to evaluated code.
-    </h1>
-    <p className="mx-auto mt-6 max-w-2xl text-base leading-8 text-slate-300 sm:text-lg">
-      A model-agnostic coding agent for quantitative workflows, reproducible evaluations, research connectors, and Slack.
-    </p>
-    <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-      <a className="rounded-lg bg-blue-500 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-400" href="/install-anywhere">
-        Get started
-      </a>
-      <a className="rounded-lg border border-slate-600 px-5 py-3 text-sm font-semibold text-slate-200 transition hover:border-slate-400 hover:text-white" href="https://github.com/zen-tradings/zen-coding">
-        View on GitHub
-      </a>
-    </div>
-  </section>
+<div className="max-w-4xl pb-20">
+  <p className="max-w-3xl text-base leading-8 text-slate-300">
+    Zen Coding extends pi with quantitative workflows, reproducible evaluations, research connectors, and persistent Slack sessions.
+  </p>
 
-  <div className="mx-auto mt-16 max-w-3xl">
+  <div className="mt-8 flex flex-wrap items-center gap-3">
+    <a className="rounded-lg bg-blue-500 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-400" href="/install-anywhere">
+      Get started
+    </a>
+    <a className="rounded-lg border border-slate-600 px-5 py-3 text-sm font-semibold text-slate-200 transition hover:border-slate-400 hover:text-white" href="https://github.com/zen-tradings/zen-coding">
+      View on GitHub
+    </a>
+  </div>
+
+  <div className="mt-14 max-w-3xl">
     <TypingTerminal />
   </div>
 
-  <section className="mx-auto mt-24 max-w-4xl">
-    <div className="mb-10 max-w-2xl">
+  <section className="mt-20">
+    <div className="mb-9 max-w-2xl">
       <p className="text-sm font-semibold uppercase tracking-[0.2em] text-blue-300">One workflow</p>
       <h2 className="mt-3 text-3xl font-semibold tracking-tight text-white">Build, test, and operate with less friction.</h2>
     </div>
