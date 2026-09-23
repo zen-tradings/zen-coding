@@ -1,3 +1,9 @@
+---
+title: "Eval harness"
+description: "Run reproducible benchmarks to evaluate Zen Coding against fixed tasks."
+sidebarTitle: "Eval harness"
+---
+
 # Eval harness
 
 zen-coding ships a small, reproducible benchmark harness for measuring the agent
@@ -9,7 +15,7 @@ known pi release.
 
 ## Concepts
 
-An **eval case** ([`evals/evals.json`](../evals/evals.json)) is:
+An **eval case** ([`evals/evals.json`](https://github.com/zen-tradings/zen-coding/blob/experimental/evals/evals.json)) is:
 
 | Field | Meaning |
 |---|---|

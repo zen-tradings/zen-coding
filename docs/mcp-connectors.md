@@ -1,8 +1,14 @@
+---
+title: "Research connectors"
+description: "Connect Zen Coding to research and engineering tools through MCP."
+sidebarTitle: "MCP connectors"
+---
+
 # Research connectors (MCP)
 
 zen-coding connects to external research and engineering tools through the
 [Model Context Protocol](https://modelcontextprotocol.io). Servers are declared in
-[`.pi/mcp.json`](../.pi/mcp.json) and bridged into pi by
+[`.pi/mcp.json`](https://github.com/zen-tradings/zen-coding/blob/experimental/.pi/mcp.json) and bridged into pi by
 [`pi-mcp-adapter`](https://github.com/nicobailon/pi-mcp-adapter), which is listed as a
 project package in `.pi/settings.json` and installed automatically the first time pi
 runs after you trust the project.

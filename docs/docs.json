@@ -1,6 +1,6 @@
 {
   "$schema": "https://mintlify.com/docs.json",
-  "name": "Zen Coding",
+  "name": "Zen Trading Docs",
   "theme": "mint",
   "colors": {
     "primary": "#4F7FD9",
@@ -25,7 +25,7 @@
     "links": [
       {
         "label": "GitHub",
-        "href": "https://github.com/zen-tradings/zen-coding"
+        "href": "https://github.com/zen-tradings"
       }
     ]
   },
@@ -36,12 +36,16 @@
         "pages": ["index"]
       },
       {
-        "group": "Build and evaluate",
-        "pages": ["evals", "install-anywhere"]
+        "group": "Coding Agent",
+        "pages": ["install-anywhere", "mcp-connectors", "slack", "evals"]
       },
       {
-        "group": "Connect and operate",
-        "pages": ["mcp-connectors", "slack"]
+        "group": "Fundamental Agent",
+        "pages": ["fundamental-agent"]
+      },
+      {
+        "group": "Benchmarking",
+        "pages": ["benchmarking"]
       }
     ]
   },

@@ -1,3 +1,9 @@
+---
+title: "Use Zen Coding in any repository"
+description: "Install the Zen Coding extension layer and load it wherever pi runs."
+sidebarTitle: "Install anywhere"
+---
+
 # Using zen-coding in any repository
 
 zen-coding is a [pi package](https://github.com/earendil-works/pi/blob/main/packages/coding-agent/docs/packages.md):

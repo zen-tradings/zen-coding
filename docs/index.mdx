@@ -1,96 +1,32 @@
 ---
-title: "A coding agent for quantitative research"
-description: "A quantitative research coding agent built on pi."
+title: "Zen Trading Documentation"
+description: "Documentation for Zen Trading's agent products and benchmarking workflows."
 mode: "wide"
 ---
 
-export const TypingTerminal = () => {
-  const commands = [
-    "pi install git:github.com/zen-tradings/zen-coding",
-    "npm run agent",
-    "/zen plan",
-  ]
-  const [commandIndex, setCommandIndex] = useState(0)
-  const [characterIndex, setCharacterIndex] = useState(0)
-  const [deleting, setDeleting] = useState(false)
-  const command = commands[commandIndex]
-
-  useEffect(() => {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      setCharacterIndex(command.length)
-      return
-    }
-
-    const atEnd = characterIndex === command.length
-    const atStart = characterIndex === 0
-    const delay = deleting ? 35 : atEnd ? 1400 : 70
-    const timer = window.setTimeout(() => {
-      if (atEnd && !deleting) {
-        setDeleting(true)
-      } else if (atStart && deleting) {
-        setDeleting(false)
-        setCommandIndex((current) => (current + 1) % commands.length)
-      } else {
-        setCharacterIndex((current) => current + (deleting ? -1 : 1))
-      }
-    }, delay)
-
-    return () => window.clearTimeout(timer)
-  }, [characterIndex, command, deleting])
-
-  return (
-    <div className="overflow-hidden rounded-2xl border border-slate-700/80 bg-slate-950 shadow-2xl shadow-slate-950/20">
-      <div className="flex items-center gap-2 border-b border-slate-800 px-4 py-3" aria-hidden="true">
-        <span className="h-2.5 w-2.5 rounded-full bg-red-400"></span>
-        <span className="h-2.5 w-2.5 rounded-full bg-amber-300"></span>
-        <span className="h-2.5 w-2.5 rounded-full bg-emerald-400"></span>
-        <span className="ml-2 font-mono text-xs text-slate-500">zen-coding</span>
-      </div>
-      <div className="flex min-h-20 items-center px-5 py-5 font-mono text-sm sm:text-base" aria-live="polite">
-        <span className="mr-3 select-none text-cyan-400">❯</span>
-        <span className="text-slate-100">{command.slice(0, characterIndex)}</span>
-        <span className="ml-1 inline-block h-5 w-px animate-pulse bg-slate-200" aria-hidden="true"></span>
-      </div>
-    </div>
-  )
-}
-
-<div className="max-w-4xl pb-20">
-  <p className="max-w-3xl text-base leading-8 text-slate-300">
-    Zen Coding extends pi with quantitative workflows, reproducible evaluations, research connectors, and persistent Slack sessions.
-  </p>
-
-  <div className="mt-8 flex flex-wrap items-center gap-3">
-    <a className="rounded-lg bg-blue-500 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-400" href="/install-anywhere">
-      Get started
-    </a>
-    <a className="rounded-lg border border-slate-600 px-5 py-3 text-sm font-semibold text-slate-200 transition hover:border-slate-400 hover:text-white" href="https://github.com/zen-tradings/zen-coding">
-      View on GitHub
-    </a>
+<div className="max-w-5xl pb-20">
+  <div className="mb-14 max-w-3xl">
+    <p className="text-base leading-8 text-slate-300">
+      Explore the agents and evaluation systems that support Zen Trading's quantitative research workflow.
+    </p>
   </div>
 
-  <div className="mt-14 max-w-3xl">
-    <TypingTerminal />
-  </div>
+  <CardGroup cols={3}>
+    <Card title="Coding Agent" icon="terminal" href="/install-anywhere">
+      Read the Markdown maintained in the Zen Coding repository.
+    </Card>
+    <Card title="Fundamental Agent" icon="book-open" href="/fundamental-agent">
+      Open the documentation source maintained with zen-fundamentals.
+    </Card>
+    <Card title="Benchmarking" icon="chart-line" href="/benchmarking">
+      Open the documentation maintained with coding-routing-benchmark.
+    </Card>
+  </CardGroup>
 
-  <section className="mt-20">
-    <div className="mb-9 max-w-2xl">
-      <p className="text-sm font-semibold uppercase tracking-[0.2em] text-blue-300">One workflow</p>
-      <h2 className="mt-3 text-3xl font-semibold tracking-tight text-white">Build, test, and operate with less friction.</h2>
-    </div>
-    <CardGroup cols={2}>
-      <Card title="Install anywhere" icon="terminal" href="/install-anywhere">
-        Bring the Zen extension layer into any repository.
-      </Card>
-      <Card title="Run evaluations" icon="chart-line" href="/evals">
-        Compare models with reproducible coding benchmarks.
-      </Card>
-      <Card title="Research connectors" icon="plug" href="/mcp-connectors">
-        Connect research, GitHub, Docker, Render, and Mintlify.
-      </Card>
-      <Card title="Operate from Slack" icon="slack" href="/slack">
-        Map Slack threads to persistent agent sessions.
-      </Card>
-    </CardGroup>
-  </section>
+  <div className="mt-20 border-t border-slate-700/70 pt-10">
+    <p className="text-sm font-semibold uppercase tracking-[0.2em] text-blue-300">Documentation sources</p>
+    <p className="mt-4 max-w-3xl text-sm leading-7 text-slate-400">
+      Product documentation follows the canonical Markdown maintained with each codebase. Sections expand as verified source documentation becomes available.
+    </p>
+  </div>
 </div>

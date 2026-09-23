@@ -1,8 +1,14 @@
+---
+title: "Slack bot"
+description: "Understand Zen Coding's Slack architecture and configuration."
+sidebarTitle: "Slack bot"
+---
+
 # Slack bot — architecture and configuration
 
 This page explains how the Slack backend (`src/slack/`) works and lists every
 configuration option. For the step-by-step setup (creating the Slack app, generating
-tokens, inviting the bot) see the [Slack bot section of the README](../README.md#slack-bot).
+tokens, inviting the bot) see the [Slack bot section of the README](https://github.com/zen-tradings/zen-coding#slack-bot).
 
 ## How it works
 
@@ -84,7 +90,7 @@ All settings are environment variables, read once at startup (`src/slack/config.
 
 ## Slack app manifest
 
-[`slack-app-manifest.yaml`](../slack-app-manifest.yaml) pre-configures the bot's
+[`slack-app-manifest.yaml`](https://github.com/zen-tradings/zen-coding/blob/experimental/slack-app-manifest.yaml) pre-configures the bot's
 scopes, event subscriptions, and Socket Mode. To let the bot work in **private
 channels**, add the `groups:history` scope and the `message.groups` event, then
 reinstall the app to your workspace.
