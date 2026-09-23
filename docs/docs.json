@@ -13,13 +13,13 @@
   },
   "background": {
     "color": {
-      "light": "#0E1932",
+      "light": "#F8FAFC",
       "dark": "#0E1932"
     }
   },
   "logo": {
-    "light": "/zen-trading-logo.png",
-    "dark": "/zen-trading-logo.png"
+    "light": "/zen-trading-wordmark-dark.svg",
+    "dark": "/zen-trading-wordmark.svg"
   },
   "navbar": {
     "links": [

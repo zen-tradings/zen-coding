@@ -12,6 +12,12 @@
   background-attachment: fixed;
 }
 
+img.nav-logo {
+  width: auto !important;
+  height: 2rem !important;
+  max-width: 11rem !important;
+}
+
 #navbar,
 #sidebar {
   background: rgba(8, 18, 38, 0.68) !important;

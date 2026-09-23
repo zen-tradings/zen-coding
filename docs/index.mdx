@@ -1,7 +1,7 @@
 ---
 title: "A coding agent for quantitative research"
 description: "A quantitative research coding agent built on pi."
-mode: "wide"
+mode: "custom"
 ---
 
 export const TypingTerminal = () => {
@@ -39,7 +39,7 @@ export const TypingTerminal = () => {
   }, [characterIndex, command, deleting])
 
   return (
-    <div className="not-prose my-8 overflow-hidden rounded-xl border border-slate-700 bg-slate-950 shadow-xl shadow-slate-950/10">
+    <div className="overflow-hidden rounded-2xl border border-slate-700/80 bg-slate-950 shadow-2xl shadow-slate-950/20">
       <div className="flex items-center gap-2 border-b border-slate-800 px-4 py-3" aria-hidden="true">
         <span className="h-2.5 w-2.5 rounded-full bg-red-400"></span>
         <span className="h-2.5 w-2.5 rounded-full bg-amber-300"></span>
@@ -55,47 +55,47 @@ export const TypingTerminal = () => {
   )
 }
 
-Zen Coding extends [pi](https://github.com/earendil-works/pi) with quantitative workflows, guardrails, research connectors, observability, and reproducible evaluations. It remains model-agnostic and can run in the terminal or through Slack.
+<main className="mx-auto max-w-6xl px-6 pb-24 pt-16 sm:pt-24">
+  <section className="mx-auto max-w-3xl text-center">
+    <p className="text-sm font-semibold uppercase tracking-[0.22em] text-blue-300">Zen Coding</p>
+    <h1 className="mt-5 text-4xl font-semibold tracking-tight text-white sm:text-6xl">
+      Quant research, from idea to evaluated code.
+    </h1>
+    <p className="mx-auto mt-6 max-w-2xl text-base leading-8 text-slate-300 sm:text-lg">
+      A model-agnostic coding agent for quantitative workflows, reproducible evaluations, research connectors, and Slack.
+    </p>
+    <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+      <a className="rounded-lg bg-blue-500 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-400" href="/install-anywhere">
+        Get started
+      </a>
+      <a className="rounded-lg border border-slate-600 px-5 py-3 text-sm font-semibold text-slate-200 transition hover:border-slate-400 hover:text-white" href="https://github.com/zen-tradings/zen-coding">
+        View on GitHub
+      </a>
+    </div>
+  </section>
 
-<TypingTerminal />
+  <div className="mx-auto mt-16 max-w-3xl">
+    <TypingTerminal />
+  </div>
 
-<CardGroup cols={2}>
-  <Card title="Install anywhere" icon="terminal" href="/install-anywhere">
-    Install the Zen extension layer into pi and use it from any repository.
-  </Card>
-  <Card title="Run evaluations" icon="chart-line" href="/evals">
-    Compare models against fixed coding tasks with reproducible benchmarks.
-  </Card>
-  <Card title="Research connectors" icon="plug" href="/mcp-connectors">
-    Connect paper research, GitHub, Docker, Render, and Mintlify through MCP.
-  </Card>
-  <Card title="Operate from Slack" icon="slack" href="/slack">
-    Map Slack threads to persistent agent sessions and repository checkouts.
-  </Card>
-</CardGroup>
-
-## Quick start
-
-<Steps>
-  <Step title="Install dependencies">
-    Clone the repository, then install the pinned runtime dependencies.
-
-    ```bash
-    npm install
-    ```
-  </Step>
-  <Step title="Provide a model key">
-    Set at least one supported model-provider key, for example `DEEPSEEK_API_KEY`.
-  </Step>
-  <Step title="Start the agent">
-    ```bash
-    npm run agent
-    ```
-  </Step>
-</Steps>
-
-<Note>
-On first launch, pi asks you to trust this project because project-local extensions can run code. Choose a model with `/model`, then select behaviour with `/zen normal`, `/zen clarify`, or `/zen plan`.
-</Note>
-
-For the source code, issues, and releases, visit the [Zen Coding repository](https://github.com/zen-tradings/zen-coding).
+  <section className="mx-auto mt-24 max-w-4xl">
+    <div className="mb-10 max-w-2xl">
+      <p className="text-sm font-semibold uppercase tracking-[0.2em] text-blue-300">One workflow</p>
+      <h2 className="mt-3 text-3xl font-semibold tracking-tight text-white">Build, test, and operate with less friction.</h2>
+    </div>
+    <Columns cols={2}>
+      <Card title="Install anywhere" icon="terminal" href="/install-anywhere">
+        Bring the Zen extension layer into any repository.
+      </Card>
+      <Card title="Run evaluations" icon="chart-line" href="/evals">
+        Compare models with reproducible coding benchmarks.
+      </Card>
+      <Card title="Research connectors" icon="plug" href="/mcp-connectors">
+        Connect research, GitHub, Docker, Render, and Mintlify.
+      </Card>
+      <Card title="Operate from Slack" icon="slack" href="/slack">
+        Map Slack threads to persistent agent sessions.
+      </Card>
+    </Columns>
+  </section>
+</main>
