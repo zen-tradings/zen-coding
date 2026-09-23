@@ -1,0 +1,103 @@
+---
+title: "Zen Coding"
+description: "A quantitative research coding agent built on pi."
+mode: "wide"
+---
+
+export const TypingTerminal = () => {
+  const commands = [
+    "pi install git:github.com/zen-tradings/zen-coding",
+    "npm run agent",
+    "/zen plan",
+  ]
+  const [commandIndex, setCommandIndex] = useState(0)
+  const [characterIndex, setCharacterIndex] = useState(0)
+  const [deleting, setDeleting] = useState(false)
+  const command = commands[commandIndex]
+
+  useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setCharacterIndex(command.length)
+      return
+    }
+
+    const atEnd = characterIndex === command.length
+    const atStart = characterIndex === 0
+    const delay = deleting ? 35 : atEnd ? 1400 : 70
+    const timer = window.setTimeout(() => {
+      if (atEnd && !deleting) {
+        setDeleting(true)
+      } else if (atStart && deleting) {
+        setDeleting(false)
+        setCommandIndex((current) => (current + 1) % commands.length)
+      } else {
+        setCharacterIndex((current) => current + (deleting ? -1 : 1))
+      }
+    }, delay)
+
+    return () => window.clearTimeout(timer)
+  }, [characterIndex, command, deleting])
+
+  return (
+    <div className="not-prose my-8 overflow-hidden rounded-xl border border-slate-700 bg-slate-950 shadow-xl shadow-slate-950/10">
+      <div className="flex items-center gap-2 border-b border-slate-800 px-4 py-3" aria-hidden="true">
+        <span className="h-2.5 w-2.5 rounded-full bg-red-400"></span>
+        <span className="h-2.5 w-2.5 rounded-full bg-amber-300"></span>
+        <span className="h-2.5 w-2.5 rounded-full bg-emerald-400"></span>
+        <span className="ml-2 font-mono text-xs text-slate-500">zen-coding</span>
+      </div>
+      <div className="flex min-h-20 items-center px-5 py-5 font-mono text-sm sm:text-base" aria-live="polite">
+        <span className="mr-3 select-none text-cyan-400">❯</span>
+        <span className="text-slate-100">{command.slice(0, characterIndex)}</span>
+        <span className="ml-1 inline-block h-5 w-px animate-pulse bg-slate-200" aria-hidden="true"></span>
+      </div>
+    </div>
+  )
+}
+
+# A coding agent for quantitative research
+
+Zen Coding extends [pi](https://github.com/earendil-works/pi) with quantitative workflows, guardrails, research connectors, observability, and reproducible evaluations. It remains model-agnostic and can run in the terminal or through Slack.
+
+<TypingTerminal />
+
+<CardGroup cols={2}>
+  <Card title="Install anywhere" icon="terminal" href="/install-anywhere">
+    Install the Zen extension layer into pi and use it from any repository.
+  </Card>
+  <Card title="Run evaluations" icon="chart-line" href="/evals">
+    Compare models against fixed coding tasks with reproducible benchmarks.
+  </Card>
+  <Card title="Research connectors" icon="plug" href="/mcp-connectors">
+    Connect paper research, GitHub, Docker, Render, and Mintlify through MCP.
+  </Card>
+  <Card title="Operate from Slack" icon="slack" href="/slack">
+    Map Slack threads to persistent agent sessions and repository checkouts.
+  </Card>
+</CardGroup>
+
+## Quick start
+
+<Steps>
+  <Step title="Install dependencies">
+    Clone the repository, then install the pinned runtime dependencies.
+
+    ```bash
+    npm install
+    ```
+  </Step>
+  <Step title="Provide a model key">
+    Set at least one supported model-provider key, for example `DEEPSEEK_API_KEY`.
+  </Step>
+  <Step title="Start the agent">
+    ```bash
+    npm run agent
+    ```
+  </Step>
+</Steps>
+
+<Note>
+On first launch, pi asks you to trust this project because project-local extensions can run code. Choose a model with `/model`, then select behaviour with `/zen normal`, `/zen clarify`, or `/zen plan`.
+</Note>
+
+For the source code, issues, and releases, visit the [Zen Coding repository](https://github.com/zen-tradings/zen-coding).
