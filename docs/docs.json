@@ -3,7 +3,19 @@
   "name": "Zen Coding",
   "theme": "mint",
   "colors": {
-    "primary": "#0E1932"
+    "primary": "#4F7FD9",
+    "light": "#8FB3FF",
+    "dark": "#0E1932"
+  },
+  "appearance": {
+    "default": "dark",
+    "strict": true
+  },
+  "background": {
+    "color": {
+      "light": "#0E1932",
+      "dark": "#0E1932"
+    }
   },
   "logo": {
     "light": "/zen-trading-logo.png",

@@ -1,112 +1,20 @@
-:root {
-  --zen-navy: #0e1932;
-  --zen-navy-deep: #07101f;
-  --zen-navy-soft: #121d39;
-  --zen-text: #f5f7ff;
-  --zen-muted: #b8c4dc;
-  --zen-line: rgba(173, 197, 255, 0.16);
-  --zen-glow: rgba(77, 125, 224, 0.28);
-}
-
-html,
-body {
-  background: var(--zen-navy-deep) !important;
-  color-scheme: dark;
-}
-
 #background-color {
-  background-color: var(--zen-navy) !important;
+  background-color: #0e1932 !important;
   background-image:
-    radial-gradient(circle at 12% 18%, rgba(196, 217, 255, 0.75) 0 1px, transparent 1.6px),
-    radial-gradient(circle at 78% 14%, rgba(137, 177, 255, 0.6) 0 1px, transparent 1.5px),
-    radial-gradient(circle at 34% 72%, rgba(255, 255, 255, 0.42) 0 0.8px, transparent 1.4px),
-    radial-gradient(circle at 84% 66%, rgba(126, 166, 255, 0.4) 0 1px, transparent 1.8px),
-    radial-gradient(ellipse at 18% 8%, rgba(54, 94, 184, 0.24), transparent 36%),
-    radial-gradient(ellipse at 88% 52%, rgba(47, 83, 168, 0.2), transparent 38%),
-    linear-gradient(180deg, #0e1932 0%, #0a142a 52%, #07101f 100%) !important;
-  background-position: 0 0, 34px 72px, 92px 28px, 18px 118px, 0 0, 0 0, 0 0;
-  background-size: 170px 170px, 230px 230px, 140px 140px, 280px 280px, 100% 100%, 100% 100%, 100% 100%;
+    radial-gradient(circle at 14% 22%, rgba(210, 225, 255, 0.34) 0 0.7px, transparent 1.2px),
+    radial-gradient(circle at 76% 18%, rgba(143, 179, 255, 0.3) 0 0.7px, transparent 1.2px),
+    radial-gradient(circle at 42% 78%, rgba(255, 255, 255, 0.2) 0 0.6px, transparent 1.1px),
+    radial-gradient(ellipse at 18% 10%, rgba(58, 94, 175, 0.13), transparent 34%),
+    radial-gradient(ellipse at 86% 58%, rgba(43, 75, 153, 0.12), transparent 38%),
+    linear-gradient(180deg, #0e1932 0%, #0b162d 55%, #081225 100%) !important;
+  background-position: 0 0, 44px 82px, 96px 30px, 0 0, 0 0, 0 0;
+  background-size: 210px 210px, 280px 280px, 170px 170px, 100% 100%, 100% 100%, 100% 100%;
   background-attachment: fixed;
 }
 
-#body-content,
-#content-area,
-#content {
-  background: transparent !important;
-}
-
 #navbar,
-#sidebar,
-#table-of-contents {
-  background: rgba(8, 17, 36, 0.76) !important;
-  border-color: var(--zen-line) !important;
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
-}
-
-#navbar {
-  box-shadow: 0 1px 0 var(--zen-line);
-}
-
-#page-title,
-mdx-content h1,
-mdx-content h2,
-mdx-content h3,
-mdx-content h4,
-mdx-content strong {
-  color: var(--zen-text) !important;
-}
-
-mdx-content,
-mdx-content p,
-mdx-content li,
-mdx-content td,
-mdx-content th {
-  color: var(--zen-muted) !important;
-}
-
-mdx-content a,
-toc-item[data-active],
-toc-item[data-active-deepest] {
-  color: #9dbbff !important;
-}
-
-card,
-callout,
-step,
-table {
-  border-color: var(--zen-line) !important;
-}
-
-card {
-  background: rgba(18, 29, 57, 0.62) !important;
-  box-shadow: 0 14px 36px rgba(2, 7, 18, 0.2);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-}
-
-card:hover {
-  background: rgba(24, 40, 77, 0.78) !important;
-  border-color: rgba(151, 184, 255, 0.34) !important;
-  box-shadow: 0 18px 48px var(--zen-glow);
-}
-
-callout {
-  background: rgba(18, 29, 57, 0.72) !important;
-}
-
-code-block,
-pre {
-  border-color: var(--zen-line) !important;
-  box-shadow: 0 12px 32px rgba(1, 5, 15, 0.24);
-}
-
-@media (prefers-reduced-transparency: reduce) {
-  #navbar,
-  #sidebar,
-  #table-of-contents,
-  card {
-    backdrop-filter: none;
-    -webkit-backdrop-filter: none;
-  }
+#sidebar {
+  background: rgba(8, 18, 38, 0.68) !important;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
 }
