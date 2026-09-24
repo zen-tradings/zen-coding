@@ -149,18 +149,19 @@ img.nav-logo {
 
 .zen-type-line {
   display: block;
+  width: 0;
   max-width: 100%;
   overflow: hidden;
   white-space: nowrap;
   border-right: 2px solid rgba(247, 247, 244, 0.85);
   animation:
-    zen-type 3.8s steps(48, end) 0.35s both,
+    zen-type 2.2s steps(49, end) 0.2s both,
     zen-caret 0.82s step-end infinite;
 }
 
 @keyframes zen-type {
-  from { max-width: 0; }
-  to { max-width: 48ch; }
+  from { width: 0; }
+  to { width: 52ch; }
 }
 
 @keyframes zen-caret {
@@ -238,6 +239,7 @@ img.nav-logo {
   }
 
   .zen-type-line {
+    width: auto;
     white-space: normal;
     overflow-wrap: anywhere;
     animation: none;
@@ -253,6 +255,7 @@ img.nav-logo {
 
 @media (prefers-reduced-motion: reduce) {
   .zen-type-line {
+    width: auto;
     animation: none;
     max-width: 100%;
     border-right: 0;
