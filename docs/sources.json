@@ -28,6 +28,15 @@
       "path": "doc",
       "target": "benchmarking",
       "rewriteRootLinks": true
+    },
+    {
+      "id": "zen-rft",
+      "group": "Zen RFT",
+      "repository": "zen-tradings/zen-rft",
+      "ref": "dev",
+      "path": "docs",
+      "target": "zen-rft",
+      "rewriteRootLinks": true
     }
   ]
 }

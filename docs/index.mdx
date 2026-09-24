@@ -4,14 +4,27 @@ description: "Documentation for Zen Trading's agent products and benchmarking wo
 mode: "wide"
 ---
 
-<div className="max-w-5xl pb-20">
-  <div className="mb-14 max-w-3xl">
-    <p className="text-base leading-8 text-slate-300">
+<div className="zen-page-shell pb-20">
+  <div className="zen-intro">
+    <p>
       Explore the agents and evaluation systems that support Zen Trading's quantitative research workflow.
     </p>
   </div>
 
-  <CardGroup cols={3}>
+  <div className="zen-terminal" aria-label="Zen Coding installation command">
+    <div className="zen-terminal-head">
+      <span className="zen-terminal-dots" aria-hidden="true">
+        <i></i><i></i><i></i>
+      </span>
+      <span>zen-coding</span>
+    </div>
+    <div className="zen-terminal-body">
+      <span className="zen-terminal-prompt" aria-hidden="true">›</span>
+      <code className="zen-type-line">pi install git:github.com/zen-tradings/zen-coding</code>
+    </div>
+  </div>
+
+  <div className="zen-card-grid">
     <Card title="Coding Agent" icon="terminal" href="/install-anywhere">
       Read the Markdown maintained in the Zen Coding repository.
     </Card>
@@ -21,12 +34,15 @@ mode: "wide"
     <Card title="Benchmarking" icon="chart-line" href="/benchmarking">
       Open the documentation maintained with coding-routing-benchmark.
     </Card>
-  </CardGroup>
+    <Card title="Zen RFT" icon="cpu" href="/zen-rft">
+      Explore verifiable financial tasks and reinforcement fine-tuning research.
+    </Card>
+  </div>
 
-  <div className="mt-20 border-t border-slate-700/70 pt-10">
-    <p className="text-sm font-semibold uppercase tracking-[0.2em] text-blue-300">Documentation sources</p>
-    <p className="mt-4 max-w-3xl text-sm leading-7 text-slate-400">
+  <section className="zen-source-note">
+    <p className="zen-eyebrow">Documentation sources</p>
+    <p>
       Product documentation follows the canonical Markdown maintained with each codebase. Sections expand as verified source documentation becomes available.
     </p>
-  </div>
+  </section>
 </div>

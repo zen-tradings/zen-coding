@@ -3,8 +3,8 @@
   "name": "Zen Trading Docs",
   "theme": "mint",
   "colors": {
-    "primary": "#355A77",
-    "light": "#4A6E8F",
+    "primary": "#8FB3D1",
+    "light": "#BBD0E3",
     "dark": "#F7F7F4"
   },
   "appearance": {
@@ -52,6 +52,10 @@
           "benchmarking/prompt-set",
           "benchmarking/metrics"
         ]
+      },
+      {
+        "group": "Zen RFT",
+        "pages": ["zen-rft/index"]
       }
     ]
   },
