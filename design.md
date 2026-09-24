@@ -30,16 +30,8 @@ criteria of choosing agent harness framework
 - Metadata like cost/latency
 
 # 🌟 Priority of building verifier/eval dataset
-## High Priority
 1. Beta-audit
 2. Portfolio construction
-3. Fundamental analysis
-4. wq-alpha-research
-5. quant paper research
-
-## Low Priority
-1. Quant-pipeline
-2. Quant-research
 
 # Benchmarking 
 Finalizing which benchmarkings are suitable to test, like Marketbench

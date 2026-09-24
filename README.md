@@ -4,8 +4,7 @@
 
 zen-coding is a terminal and Slack coding agent with quant workflows built in — alpha
 research, beta audits, portfolio construction, backtest review, paper replication — and
-guardrails against the mistakes that quietly ruin research code. It runs on any LLM,
-open-source or closed, hosted or self-hosted.
+guardrails against the mistakes that quietly ruin research code.
 
 It is a layer on top of [pi](https://github.com/earendil-works/pi), an open-source
 coding-agent harness: pi provides the agent loop, terminal UI, sessions, and model
@@ -26,7 +25,7 @@ cd zen-coding
 git submodule update --init   # optional: wq-alpha-research skill
 npm install                   # extension dependencies
 
-# 3. Set a provider key (default model is Kimi K3 on Fireworks; any provider works — switch with /model)
+# 3. Set a provider key (default model is Kimi K3 on Fireworks; Anthropic and OpenAI also supported — switch with /model)
 export FIREWORKS_API_KEY=...
 
 # 4. Run pi inside the repository
@@ -49,8 +48,8 @@ in `package.json`, if you prefer not to install pi globally.
   step-by-step procedure rather than a one-line prompt.
 - **Guardrails at the tool boundary** — destructive shell commands blocked, secrets and
   protected paths unwritable, rules that repositories can only tighten.
-- **Any model** — DeepSeek, Kimi, Qwen, GLM, Groq, Fireworks, OpenRouter, Anthropic,
-  OpenAI, Google, or a self-hosted vLLM / Ollama endpoint; switch with `/model`.
+- **Cross-model comparison** — Anthropic, OpenAI, and Fireworks (low-cost); switch
+  with `/model` and compare on identical eval tasks.
 - **Research connectors and skills** — alphaXiv, multi-source paper search, GitHub,
   Docker MCP Toolkit, Render, Mintlify via MCP; WorldQuant BRAIN alpha research as a skill.
 - **Slack bot** — @-mention with a GitHub link; the agent clones the repo and streams
@@ -105,18 +104,16 @@ zen-coding is also a [pi package](https://github.com/earendil-works/pi/blob/main
 pi install git:github.com/zen-tradings/zen-coding
 ```
 
-Guardrails, traces, `/zen` modes, self-hosted models, and `exa_search` then load in every
+Guardrails, traces, `/zen` modes, and `exa_search` then load in every
 project. The quant commands, skills, and connectors are project resources — run `pi`
 inside this repository to use them. See [docs/install-anywhere.md](docs/install-anywhere.md).
 
 ## Models
 
-- **Hosted** — export the provider key and select with `/model`: DeepSeek, Groq,
-  Fireworks, OpenRouter, Hugging Face, Together, Kimi, Qwen, ZAI/GLM, MiniMax,
-  Anthropic, OpenAI, Google, and more ([pi providers](https://github.com/earendil-works/pi/tree/main/packages/coding-agent/docs)).
-- **Self-hosted** — vLLM, SGLang, Ollama, LM Studio, llama.cpp, or any OpenAI-compatible
-  endpoint: set `ZEN_LOCAL_BASE_URL` (e.g. `http://localhost:11434/v1`) and
-  `ZEN_LOCAL_MODELS` (comma-separated ids).
+Supported providers are **Anthropic**, **OpenAI**, and one low-cost provider,
+**Fireworks** (Kimi K3, the project default), used for cross-model comparison. Export
+the provider key (`ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `FIREWORKS_API_KEY`) and select
+a model with `/model`.
 
 The project default lives in `.pi/settings.json` (`defaultProvider` / `defaultModel`).
 Comparing models on cost, latency, and pass rate is a matter of re-running the
@@ -192,6 +189,23 @@ Every session writes a JSONL trace to `~/.zen/traces/<sessionId>.jsonl` (overrid
 `TRACE_TO_BRAINTRUST=true` and `BRAINTRUST_API_KEY` to also stream sessions — interactive
 and Slack — to [Braintrust](https://www.braintrust.dev).
 
+### Evidence trace fields
+
+Every trace line carries `schema_version: 2` (v1 lines have no such field) plus these
+per-step fields. The trace holds pointers only — never file contents, prompts, or model
+outputs (write/edit content and bash heredocs are redacted from `args`). The `TraceLine`
+type is exported from `.pi/extensions/observability.ts`.
+
+| Field | Meaning |
+|---|---|
+| `role` | `plan` (step in `/zen plan` mode), `code` (`write`/`edit`), `check` (bash test/typecheck/lint command), else `other` |
+| `model` | `provider/model-id` used for the step; `null` if none selected |
+| `evidence_refs` | Pointers the step relied on: `file` (path + 1-indexed line range), `tool_call` (id), `url` (search result), `dataset` (id) |
+| `as_of` | When the evidence dates from — file mtime, search result publish date; `null` when unknown, never guessed |
+| `error` | `null`, or `{ type, message, tool_call_id }`; `type` is `tool_error`, `nonzero_exit`, `timeout`, `aborted`, `blocked`, or `model_error` |
+| `recovery` | `null`, or `{ action, attempts }` after a failed tool call: `retry` (same tool), `alternate_tool` (different tool), `gave_up` (run ended unresolved) |
+| `self_check` | `null`, or `{ what_was_checked, result }` on `check` steps: `pass`, `fail`, or `uncertain` (timed out, aborted, blocked) |
+
 `scripts/run_eval.py` runs the agent headlessly against `evals/evals.json` — fresh
 checkout per case, bash assertions, multiple attempts — and `scripts/aggregate.py`
 produces a `benchmark.json` with per-track pass rates and regressions. Guide:
@@ -201,8 +215,7 @@ produces a `benchmark.json` with per-track pass rates and regressions. Guide:
 
 | Variable | Purpose |
 |---|---|
-| `FIREWORKS_API_KEY`, `DEEPSEEK_API_KEY`, `GROQ_API_KEY`, `OPENROUTER_API_KEY`, `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `HF_TOKEN`, … | Model provider keys (at least one) |
-| `ZEN_LOCAL_BASE_URL`, `ZEN_LOCAL_MODELS` (+ `ZEN_LOCAL_API_KEY`, `_CONTEXT_WINDOW`, `_MAX_TOKENS`) | Self-hosted endpoint and model ids |
+| `FIREWORKS_API_KEY`, `ANTHROPIC_API_KEY`, `OPENAI_API_KEY` | Model provider keys (at least one) |
 | `EXA_API_KEY` | Enables the `exa_search` tool (web, code, paper search) |
 | `ALPHAXIV_API_KEY`, `RENDER_API_KEY` | MCP connector credentials |
 | `WQ_BRAIN_USERNAME`, `WQ_BRAIN_PASSWORD` | WorldQuant BRAIN credentials (`wq-alpha-research`) |
@@ -219,7 +232,7 @@ npm run agent         # run the pinned pi version against this repository
 
 | Path | Contents |
 |---|---|
-| `.pi/extensions/` | `guardrails.ts`, `observability.ts`, `modes.ts`, `zen-models.ts`, `zen-tools/` |
+| `.pi/extensions/` | `guardrails.ts`, `observability.ts`, `modes.ts`, `zen-tools/` |
 | `.pi/prompts/`, `.pi/skills/` | Quant prompt templates; skills (`wq-alpha-research` is a submodule) |
 | `.pi/mcp.json`, `.pi/guardrails.json`, `.pi/settings.json` | Connector, guardrail, and default-model configuration |
 | `src/slack/` | Slack backend (pi SDK) |

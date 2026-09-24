@@ -52,6 +52,7 @@ export default function (pi: ExtensionAPI) {
         return;
       }
       mode = requested;
+      pi.events.emit("zen:mode", mode);
       ctx.ui.setStatus("zen-mode", mode === "normal" ? "" : `zen: ${mode}`);
       ctx.ui.notify(`zen mode: ${mode}`, "info");
     },

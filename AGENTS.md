@@ -24,8 +24,6 @@ runs in this repo. See README.md and design.md for the full picture.
 - `ALPHAXIV_API_KEY` — for the alphaXiv MCP server
 - `RENDER_API_KEY` — for the Render MCP server
 - GitHub MCP auth reuses `gh auth token` (no PAT needed)
-- `ZEN_LOCAL_BASE_URL` / `ZEN_LOCAL_MODELS` — self-hosted model endpoints
-  (see `.pi/extensions/zen-models.ts`)
 - `WQ_BRAIN_USERNAME` / `WQ_BRAIN_PASSWORD` — WorldQuant BRAIN credentials for the
   `wq-alpha-research` skill (`.pi/skills/wq-alpha-research`, a git submodule). Its
   scripts also accept an untracked `credential.txt` (gitignored; never commit it).
@@ -52,7 +50,7 @@ runs in this repo. See README.md and design.md for the full picture.
 ## Project layout
 
 - `.pi/extensions/` — guardrails, observability (JSONL traces → `~/.zen/traces/`),
-  `/zen normal|clarify|plan` modes, self-hosted model registration, zen-tools
+  `/zen normal|clarify|plan` modes, zen-tools
 - `.pi/skills/` — shared skills (`wq-alpha-research` is a git submodule;
   clone with `git submodule update --init`)
 - `.pi/prompts/` — shared prompt templates
