@@ -15,6 +15,7 @@ import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 import { appendFileSync, mkdirSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
+import { redact } from "../../src/redact";
 
 const MAX_FIELD_CHARS = 4000;
 
@@ -84,7 +85,7 @@ export default function (pi: ExtensionAPI) {
     emit("tool_call_start", {
       toolCallId: event.toolCallId,
       toolName: event.toolName,
-      args: compact(event.args),
+      args: compact(redact(event.args)),
     });
   });
 
