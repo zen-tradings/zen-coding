@@ -1,0 +1,22 @@
+---
+title: "Prompt set"
+description: "How the 30 benchmark prompts are labelled."
+---
+
+`prompts/dev_v1.jsonl` has 30 prompts — 10 `LOW`, 10 `MID`, 10 `HIGH` — across ten task types: Q&A, features, debugging, tests, DevOps, refactoring, review, architecture, security, and docs.
+
+## Difficulty rubric
+
+Each prompt is scored 0–2 on five dimensions: reasoning depth, scope, context, risk, and specialised knowledge.
+
+| Total score | Tier |
+|---|---|
+| 0–3 | `LOW` |
+| 4–7 | `MID` |
+| 8–10 | `HIGH` |
+
+The runner validates labels against the rubric on load.
+
+<Warning>
+  The set is **versioned benchmark data**. Once results are published, `dev_v1` is frozen and changes go into `dev_v2`.
+</Warning>

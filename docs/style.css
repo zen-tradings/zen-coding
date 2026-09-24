@@ -1,12 +1,37 @@
+@font-face {
+  font-family: "Zen Montserrat";
+  src: url("/zen-montserrat.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  --zen-navy: #0e1932;
+  --zen-navy-raised: #121d39;
+  --zen-navy-hover: #0b1530;
+  --zen-cream: #f7f7f4;
+  --zen-border: rgba(255, 255, 255, 0.12);
+}
+
+html,
+body,
+button,
+input,
+textarea,
+select {
+  font-family: "Zen Montserrat", Montserrat, Arial, sans-serif !important;
+}
+
 #background-color {
-  background-color: #0e1932 !important;
+  background-color: var(--zen-navy) !important;
   background-image:
     radial-gradient(circle at 14% 22%, rgba(210, 225, 255, 0.34) 0 0.7px, transparent 1.2px),
     radial-gradient(circle at 76% 18%, rgba(143, 179, 255, 0.3) 0 0.7px, transparent 1.2px),
     radial-gradient(circle at 42% 78%, rgba(255, 255, 255, 0.2) 0 0.6px, transparent 1.1px),
     radial-gradient(ellipse at 18% 10%, rgba(58, 94, 175, 0.13), transparent 34%),
     radial-gradient(ellipse at 86% 58%, rgba(43, 75, 153, 0.12), transparent 38%),
-    linear-gradient(180deg, #0e1932 0%, #0b162d 55%, #081225 100%) !important;
+    linear-gradient(180deg, var(--zen-navy) 0%, var(--zen-navy-raised) 100%) !important;
   background-position: 0 0, 44px 82px, 96px 30px, 0 0, 0 0, 0 0;
   background-size: 210px 210px, 280px 280px, 170px 170px, 100% 100%, 100% 100%, 100% 100%;
   background-attachment: fixed;
@@ -20,7 +45,12 @@ img.nav-logo {
 
 #navbar,
 #sidebar {
-  background: rgba(8, 18, 38, 0.68) !important;
+  background: rgba(14, 25, 50, 0.86) !important;
+  border-color: var(--zen-border) !important;
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
+}
+
+#sidebar a:hover {
+  background-color: var(--zen-navy-hover) !important;
 }

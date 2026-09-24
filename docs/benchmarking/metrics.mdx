@@ -1,0 +1,15 @@
+---
+title: "Metrics"
+description: "What the benchmark measures and how to interpret it."
+---
+
+- **Rubric agreement** — did the router pick the tier the rubric expected? (Not called "accuracy": expected tiers are human labels, not ground truth.)
+- **Under-routing** — hard task → weak model (quality risk).
+- **Over-routing** — easy task → strong model (cost waste).
+- **Decision latency** — mean / median / p95 of the routing call only.
+- **Stability** — same answer across repeats?
+- **Per-category breakdown** and **failure rate** — timeouts, parse errors, and unknown models are reported separately, never hidden.
+
+## Interpreting results
+
+There is no single "winner" metric. Under-routing costs quality, over-routing costs money — which matters more depends on you. A router's tier distribution is its *fingerprint*, not a score.

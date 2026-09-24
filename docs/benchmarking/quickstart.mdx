@@ -1,0 +1,48 @@
+---
+title: "Quickstart"
+description: "Run the benchmark locally."
+---
+
+Requires **Python 3.11+**, no third-party dependencies (`pytest` for tests).
+
+<Steps>
+  <Step title="Clone and validate">
+    ```bash
+    git clone https://github.com/zen-tradings/coding-routing-benchmark.git
+    cd coding-routing-benchmark
+    python3 -m benchmark.runner --dry-run
+    ```
+  </Step>
+  <Step title="Create a toy router">
+    Save as `toy_router.py`:
+
+    ```python
+    #!/usr/bin/env python3
+    import json, sys
+    text = json.load(sys.stdin)["prompt"].lower()
+    choice = "opus" if any(w in text for w in ("design", "architecture")) else \
+             "sonnet" if len(text) > 200 else "haiku"
+    print(json.dumps({"selected_model": choice}))
+    ```
+  </Step>
+  <Step title="Run it">
+    ```bash
+    export PI_AUTO_ROUTER_COMMAND='python3 toy_router.py'
+    python3 -m benchmark.runner --router auto --runs 1 --output results/toy
+    cat results/toy/summary.md
+    ```
+  </Step>
+</Steps>
+
+## CLI options
+
+| Flag | Description |
+|---|---|
+| `--prompts PATH` | Prompt file (default `prompts/dev_v1.jsonl`) |
+| `--runs N` | Repetitions per prompt |
+| `--router {auto,model,jev}` | Run a single router |
+| `--output DIR` | Output directory |
+| `--config PATH` | Config file (default `benchmark.toml`) |
+| `--dry-run` | Validate prompts and config without calling routers |
+
+Outputs: `results.jsonl`, `summary.json`, `summary.md`, `metadata.json`.

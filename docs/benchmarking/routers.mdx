@@ -1,0 +1,30 @@
+---
+title: "Plugging in a router"
+description: "Connect any router via stdin/stdout."
+---
+
+The built-in adapters run the command in their environment variable once per decision.
+
+## Protocol
+
+**stdin:**
+
+```json
+{"prompt": "…", "available_models": ["claude-haiku", "claude-sonnet", "claude-opus"]}
+```
+
+**stdout:** a bare string (`sonnet`, `HIGH`) or JSON (`{"selected_model": "claude-3-5-sonnet"}`).
+
+## Built-in adapters
+
+| Adapter | Env var |
+|---|---|
+| `auto` | `PI_AUTO_ROUTER_COMMAND` |
+| `model` | `PI_MODEL_ROUTER_COMMAND` |
+| `jev` | `PI_JEV_ROUTER_COMMAND` |
+
+## Adding a new adapter
+
+1. Subclass `RouterAdapter` in `benchmark/adapters/` (set `name` and `command_env`, or override `route()`).
+2. Register it in the `ADAPTERS` dict.
+3. Add a `[routers.<name>]` block to `benchmark.toml`.

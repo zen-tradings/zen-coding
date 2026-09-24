@@ -3,9 +3,9 @@
   "name": "Zen Trading Docs",
   "theme": "mint",
   "colors": {
-    "primary": "#4F7FD9",
-    "light": "#8FB3FF",
-    "dark": "#0E1932"
+    "primary": "#355A77",
+    "light": "#4A6E8F",
+    "dark": "#F7F7F4"
   },
   "appearance": {
     "default": "dark",
@@ -41,11 +41,17 @@
       },
       {
         "group": "Fundamental Agent",
-        "pages": ["fundamental-agent"]
+        "pages": ["fundamental-agent/index"]
       },
       {
         "group": "Benchmarking",
-        "pages": ["benchmarking"]
+        "pages": [
+          "benchmarking/index",
+          "benchmarking/quickstart",
+          "benchmarking/routers",
+          "benchmarking/prompt-set",
+          "benchmarking/metrics"
+        ]
       }
     ]
   },

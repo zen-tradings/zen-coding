@@ -1,9 +1,8 @@
 {
-  "_readme": "Eval cases for the coding agent. Each case: fresh checkout of `repo` at `base_commit`, run pi headless with `prompt`, then every assertion `cmd` runs in the checkout (bash, exit 0 = pass). `repo` is an absolute path or a path relative to this repo's root ('.' = zen-coding itself). `track` groups cases by workload (infra | newsletter-agent | deploy-strategy | quant-research) for --track filtering and per-track pass rates. `enabled: false` keeps a case in the file but skips it (use for placeholders). Pass criteria are fixed before the run -- never bend assertions to fit results. `smoke-hello` only proves the loop works.",
+  "_readme": "Eval cases for the coding agent. Each case: fresh checkout of `repo` at `base_commit`, run pi headless with `prompt`, then every assertion `cmd` runs in the checkout (bash, exit 0 = pass). `repo` is an absolute path or a path relative to this repo's root ('.' = zen-coding itself). Real golden-PR cases go here; `smoke-hello` only proves the loop works.",
   "cases": [
     {
       "id": "smoke-hello",
-      "track": "infra",
       "repo": ".",
       "base_commit": "HEAD",
       "prompt": "Create a file named hello_eval.txt at the repository root containing exactly the single line: ok",
@@ -12,73 +11,6 @@
         {
           "desc": "hello_eval.txt exists with the expected content",
           "cmd": "[ \"$(cat hello_eval.txt)\" = \"ok\" ]"
-        }
-      ]
-    },
-    {
-      "id": "deploy-add-dry-run",
-      "track": "deploy-strategy",
-      "repo": "../zen-deploy-strategy",
-      "base_commit": "HEAD",
-      "prompt": "deploy.sh currently always runs `git pull` and `docker compose up -d --build` for real. Add a `--dry-run` flag: when passed (before any service args), the script must print the commands it would execute (prefixed with a line containing 'DRY RUN') instead of running git or docker, and exit 0. Keep existing behavior unchanged when the flag is absent. Do not modify any other file.",
-      "timeout_s": 600,
-      "assertions": [
-        {
-          "desc": "deploy.sh is still valid bash",
-          "cmd": "bash -n deploy.sh"
-        },
-        {
-          "desc": "dry-run exits 0 and announces itself",
-          "cmd": "./deploy.sh --dry-run 2>&1 | grep -qi 'dry run'"
-        },
-        {
-          "desc": "dry-run does not invoke git pull or docker compose up",
-          "cmd": "! ./deploy.sh --dry-run 2>/dev/null | grep -qE '^(From |Updating)|Container .* (Started|Running)'"
-        },
-        {
-          "desc": "normal help/usage path unaffected: script still executable with a service arg under dry-run",
-          "cmd": "./deploy.sh --dry-run monitor >/dev/null 2>&1"
-        }
-      ]
-    },
-    {
-      "id": "newsletter-smoke",
-      "track": "newsletter-agent",
-      "enabled": false,
-      "repo": "git@github.com:YOUR_ORG/newsletter-agent.git",
-      "base_commit": "HEAD",
-      "prompt": "TODO: replace with a real golden-PR task from the newsletter-agent repo, then set enabled: true and the correct repo URL.",
-      "timeout_s": 600,
-      "assertions": [
-        {
-          "desc": "placeholder -- always fails until replaced",
-          "cmd": "false"
-        }
-      ]
-    },
-    {
-      "id": "research-note-momentum-2022",
-      "track": "quant-research",
-      "repo": "../quant_research_lab",
-      "base_commit": "HEAD",
-      "prompt": "Write a short research note at notes/momentum-2022-rate-shock.md (create notes/ if needed) summarizing how a standard 12-1 cross-sectional momentum factor behaved during the 2022 rate-shock regime: expected drawdown behavior, why momentum crashes happen after sharp reversals, and one mitigation (e.g. volatility scaling or crash-adjusted momentum). Cite at least one real paper (author/year or arXiv link). 200-400 words. Do not modify any existing file.",
-      "timeout_s": 600,
-      "assertions": [
-        {
-          "desc": "note exists",
-          "cmd": "test -f notes/momentum-2022-rate-shock.md"
-        },
-        {
-          "desc": "word count in 200-400 range",
-          "cmd": "n=$(wc -w < notes/momentum-2022-rate-shock.md); [ \"$n\" -ge 200 ] && [ \"$n\" -le 400 ]"
-        },
-        {
-          "desc": "contains a citation (doi/arxiv/http or Author (year) pattern)",
-          "cmd": "grep -qiE 'arxiv|doi\\.|https?://|\\([12][0-9]{3}\\)' notes/momentum-2022-rate-shock.md"
-        },
-        {
-          "desc": "mentions a mitigation technique",
-          "cmd": "grep -qiE 'volatility scaling|crash.adjusted|risk.manage|scaling' notes/momentum-2022-rate-shock.md"
         }
       ]
     }

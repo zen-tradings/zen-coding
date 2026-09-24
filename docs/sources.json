@@ -1,0 +1,33 @@
+{
+  "staticNavigation": [
+    {
+      "group": "Overview",
+      "pages": ["index"]
+    },
+    {
+      "group": "Coding Agent",
+      "pages": ["install-anywhere", "mcp-connectors", "slack", "evals"]
+    }
+  ],
+  "sources": [
+    {
+      "id": "fundamental-agent",
+      "group": "Fundamental Agent",
+      "repository": "zen-tradings/zen-fundamentals",
+      "ref": "main",
+      "path": "doc",
+      "target": "fundamental-agent",
+      "fallbackFile": "docs-templates/fundamental-agent.mdx",
+      "rewriteRootLinks": true
+    },
+    {
+      "id": "benchmarking",
+      "group": "Benchmarking",
+      "repository": "zen-tradings/coding-routing-benchmark",
+      "ref": "main",
+      "path": "doc",
+      "target": "benchmarking",
+      "rewriteRootLinks": true
+    }
+  ]
+}

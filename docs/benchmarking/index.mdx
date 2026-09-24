@@ -1,0 +1,37 @@
+---
+title: "Introduction"
+description: "Measure how well model routers pick the right AI model for a coding task."
+---
+
+A **model router** reads a developer's request and picks a model for it — cheap and fast for easy work, powerful for hard work. This benchmark gives every router the **same 30 realistic coding prompts** and the **same three model choices**, then records which model each router picked, how long it took, and how stable its answers are.
+
+<Note>
+  **Scope of v1:** routing decisions only. The selected model is never executed and no code quality is judged.
+</Note>
+
+## How it works
+
+Every router sees the same choices:
+
+| Tier | Model |
+|---|---|
+| `LOW` | `claude-haiku` |
+| `MID` | `claude-sonnet` |
+| `HIGH` | `claude-opus` |
+
+Routers answer with a **model name**; the benchmark normalises it to a tier purely for scoring.
+
+<CardGroup cols={2}>
+  <Card title="Quickstart" icon="rocket" href="/benchmarking/quickstart">
+    Run the benchmark against a toy router in a minute.
+  </Card>
+  <Card title="Plug in a router" icon="plug" href="/benchmarking/routers">
+    Connect your own router via stdin/stdout.
+  </Card>
+  <Card title="Prompt set" icon="list" href="/benchmarking/prompt-set">
+    How the 30 prompts are labelled.
+  </Card>
+  <Card title="Metrics" icon="chart-bar" href="/benchmarking/metrics">
+    What is measured and how to read it.
+  </Card>
+</CardGroup>

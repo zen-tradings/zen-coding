@@ -10,6 +10,7 @@
   },
   "scripts": {
     "agent": "pi",
+    "docs:sync": "node scripts/sync-docs.mjs",
     "slack": "tsx src/slack/index.ts",
     "typecheck": "tsc --noEmit"
   },
