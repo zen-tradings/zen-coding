@@ -168,7 +168,7 @@ function earliestAsOf(refs: EvidenceRef[]): string | null {
 export default function (pi: ExtensionAPI) {
   let tracePath: string | null = null;
   let agentStartedAt = 0;
-  let zenMode = "normal";
+  let zenMode = process.env.ZEN_SUBAGENT_MODE ?? "normal";
   const turnStartedAt = new Map<number, number>();
   const toolStartedAt = new Map<string, number>();
   const toolCalls = new Map<string, { args: unknown; role: StepRole; refs: EvidenceRef[] }>();
@@ -292,7 +292,13 @@ export default function (pi: ExtensionAPI) {
       tracePath = null;
       return;
     }
-    emit("session_start", ctx, { cwd: ctx.cwd, mode: ctx.mode, zen_mode: zenMode });
+    emit("session_start", ctx, {
+      cwd: ctx.cwd, mode: ctx.mode, zen_mode: zenMode,
+      ...(process.env.ZEN_PARENT_SESSION_ID ? {
+        parent_session_id: process.env.ZEN_PARENT_SESSION_ID,
+        parent_tool_call_id: process.env.ZEN_PARENT_TOOL_CALL_ID,
+      } : {}),
+    });
   });
 
   pi.on("agent_start", async (_event, ctx) => {

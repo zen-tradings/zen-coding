@@ -13,7 +13,7 @@ that pi discovers when you run it in this repository. The command you run is `pi
 
 ## Quick start
 
-Requires **Node.js ≥ 22**.
+Requires **Node.js ≥ 22.19**.
 
 ```bash
 # 1. Install pi (once)
@@ -52,6 +52,9 @@ in `package.json`, if you prefer not to install pi globally.
   with `/model` and compare on identical eval tasks.
 - **Research connectors and skills** — alphaXiv, multi-source paper search, GitHub,
   Docker MCP Toolkit, Render, Mintlify via MCP; WorldQuant BRAIN alpha research as a skill.
+- **Sub-agent delegation** — built-in scout, planner, reviewer, and worker profiles;
+  separate child contexts, parallel read-only tasks, and sequential workflows. See
+  [sub-agent usage and configuration](docs/subagents.md).
 - **Slack bot** — @-mention with a GitHub link; the agent clones the repo and streams
   its reply into the thread.
 - **Observability and evals** — JSONL traces of latency, tokens, and cost per session;

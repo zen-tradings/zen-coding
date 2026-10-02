@@ -53,6 +53,8 @@ runs in this repo. See README.md and design.md for the full picture.
   `/zen normal|clarify|plan` modes, zen-tools
 - `.pi/skills/` — shared skills (`wq-alpha-research` is a git submodule;
   clone with `git submodule update --init`)
+- `.pi/agents/` — bundled sub-agent profiles; `.pi/extensions/subagent/` adapts Pi’s
+  official example with child guardrails, parent tool restrictions, and bounded execution
 - `.pi/prompts/` — shared prompt templates
 - `src/slack/` — Slack backend (pi SDK)
 - `evals/`, `scripts/` — eval harness (`run_eval.py`, `aggregate.py`) and case definitions
