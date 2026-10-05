@@ -8,20 +8,33 @@ sidebarTitle: "MCP connectors"
 
 zen-coding connects to external research and engineering tools through the
 [Model Context Protocol](https://modelcontextprotocol.io). Servers are declared in
-[`.pi/mcp.json`](https://github.com/zen-tradings/zen-coding/blob/experimental/.pi/mcp.json) and bridged into pi by
-[`pi-mcp-adapter`](https://github.com/nicobailon/pi-mcp-adapter), which is listed as a
-project package in `.pi/settings.json` and installed automatically the first time pi
-runs after you trust the project.
+[`.pi/mcp.json`](https://github.com/zen-tradings/zen-coding/blob/experimental/.pi/mcp.json)
+and loaded by pi's built-in MCP support (pi ≥ 0.99), once you trust the project. No
+adapter package is needed.
+
+> If another extension that registers `/mcp` is installed (for example
+> `pi-mcp-adapter` or `@codella/pi-mcp-support`), pi skips its built-in MCP support and
+> this file is not read. Remove that package from your user settings.
 
 ## How tools are exposed
 
-All MCP servers are surfaced through a **single `mcp` proxy tool** rather than one tool
-per remote function. This keeps the per-session context footprint small even with
-dozens of connected tools, and lets the agent discover and call tools on demand.
+Each server tool is registered as `mcp__<server>__<tool>` (dashes become underscores,
+e.g. `mcp__paper_search__search_papers`). All servers use pi's default `codemode`
+exposure: their tools are not declared to the model, so dozens of connected tools cost
+almost no context. Servers are listed in a short `mcp_servers` system-prompt section with
+their `description`, and the agent finds tools with `searchTools()` inside a `codemode`
+script and calls them there, in parallel if useful.
 
-A connector that cannot authenticate (missing key, expired token) logs a warning at
-startup and the session continues without it — a missing optional connector never
-blocks you from working.
+To make a small, frequently used tool visible to the model directly, set
+`"exposure": "direct"` on the server or a single tool via `toolExposure`; see pi's
+[MCP docs](https://github.com/earendil-works/pi/blob/main/packages/coding-agent/docs/mcp.md#control-tool-exposure).
+
+Every MCP call goes through pi's tool pipeline, so zen guardrails and `/zen plan` see
+it like any other tool call.
+
+A connector that cannot connect (missing key, expired token, Docker not running) is
+reported once after startup and the session continues without it. `pi mcp list` connects
+to every server and prints its state and errors; `/mcp` shows the same inside a session.
 
 ## Connectors
 
@@ -33,12 +46,14 @@ blocks you from working.
   and managing your alphaXiv library folders. alphaXiv returns AI-digested reports
   alongside the raw paper.
 - **Auth:** create an API key at alphaxiv.org → Settings → API Keys and
-  `export ALPHAXIV_API_KEY=...`. In the terminal UI you can instead run
-  `/mcp-auth alphaxiv` for browser-based OAuth.
+  `export ALPHAXIV_API_KEY=...`. It is sent as an `Authorization: Bearer` header. To
+  sign in with browser OAuth instead, define an `alphaxiv` entry without `headers` in
+  your user-level `~/.pi/agent/mcp.json` and run `/mcp login alphaxiv`.
 
 ### paper-search
 
-- **Runs locally:** `uvx paper-search-mcp` (stdio) — requires
+- **Runs locally:** `uvx --with 'mcp<2' paper-search-mcp` (stdio; the pin keeps it on
+  the MCP Python SDK v1 API it was written for) — requires
   [uv](https://docs.astral.sh/uv/). Source:
   [openags/paper-search-mcp](https://github.com/openags/paper-search-mcp).
 - **What it gives you:** unified search and download across 24+ sources — arXiv,
@@ -56,8 +71,9 @@ blocks you from working.
 - **What it gives you:** structured issue, pull-request, and repository tools —
   `create_issue`, `add_issue_comment`, `create_pull_request`, code and issue search,
   notifications, and more.
-- **Auth:** reuses your `gh` CLI login. The adapter runs `gh auth token` at connect
-  time, so no separate personal access token is needed. The agent acts as whoever
+- **Auth:** reuses your `gh` CLI login. The `Authorization` header is the command
+  `!echo Bearer $(gh auth token)`, run at connect time, so no separate personal access
+  token is needed. The agent acts as whoever
   `gh` is logged in as.
 - **Restricting scope:** append `/readonly` to the URL for read-only access, or scope
   to a toolset with `/x/<toolset>` (e.g. `/x/issues`).
@@ -92,10 +108,26 @@ blocks you from working.
 
 ## Adding a connector
 
-Add an entry to `.pi/mcp.json`. Remote servers take a `url` plus an `auth` mode
-(`bearer` with `bearerTokenEnv`, a shell command via `"!cmd"` as `bearerToken`, or
-`false`); local servers take a `command` and `args`. Set `requestTimeoutMs` for slow
-tools. Restart pi to pick up changes.
+Add an entry to `.pi/mcp.json` (same format as Claude Code and Cursor):
+
+```json
+"my-server": {
+  "url": "https://example.com/mcp",
+  "headers": { "Authorization": "Bearer ${MY_SERVER_TOKEN}" },
+  "description": "One sentence on what it offers; shown to the model and used to rank its tools",
+  "timeout": 60
+}
+```
+
+- Remote servers take `url` and optional `headers`. Values can use `${ENV_VAR}` or be a
+  whole-value `!command`. Without an `Authorization` header pi uses OAuth when the
+  server asks for it (`/mcp login <name>`).
+- Local servers take `command`, `args`, and optional `env` and `cwd`.
+- `timeout` is per request, in seconds (default 60).
+- Project files cannot use `"auth": { "provider": ... }`; that belongs in the user-level
+  `~/.pi/agent/mcp.json`.
+
+Run `pi mcp list` to validate, then `/reload` in a running session.
 
 Connectors are configured per repository: the file in *this* repository is the one
 that applies, including for repositories checked out by the Slack backend.

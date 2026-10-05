@@ -43,8 +43,9 @@ runs in this repo. See README.md and design.md for the full picture.
   read from it as a source of truth, and never commit it. Telemetry traces go to
   `~/.zen/traces/` (override: `ZEN_TRACE_DIR`), outside the repo.
 - `.pi/npm/` is machine-local (installed packages) — never commit.
-- MCP servers are configured in `.pi/mcp.json` at the repo root; all MCP tools go
-  through the single `mcp` proxy tool.
+- MCP servers are configured in `.pi/mcp.json` at the repo root and loaded by pi's
+  built-in MCP support (no adapter package). Tools are named `mcp__<server>__<tool>`
+  and reached through `codemode` scripts by default; validate config with `pi mcp list`.
 - Committed secrets are forbidden (`.env`, `*.pem`, `*.key` are protected paths).
 
 ## Project layout
