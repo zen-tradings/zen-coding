@@ -91,7 +91,7 @@ smallest change that fixes the problem; big restructures need redirects
 ## Looking things up
 
 - **Mintlify reference is available live** through the `mintlify-docs` MCP
-  connector (via the `mcp` tool): search the official docs for any docs.json
+  connector (its `mcp__mintlify_docs__*` tools, called from `codemode`): search the official docs for any docs.json
   property, component, or CLI detail instead of guessing.
 - Any Mintlify docs page is fetchable as markdown by appending `.md` to its
   URL; the full page map is at <https://mintlify.com/docs/llms.txt>.

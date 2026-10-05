@@ -53,9 +53,10 @@ the ongoing run rather than queued as a new turn. `/zen plan`, `/zen clarify`, a
 - **Extensions always load from zen-coding.** Guardrails, observability, modes, and
   zen-tools come from this repository — a cloned repository's own `.pi/extensions/`
   is never executed.
-- **MCP configuration is fixed.** MCP servers resolve from zen-coding's working
-  directory, so a cloned repository cannot inject servers via a committed `.mcp.json`.
-  Start the backend from the zen-coding repo root so the same connectors apply.
+- **MCP configuration is fixed.** SDK sessions add pi's MCP, codemode, and tool-search
+  extensions explicitly, with file loading turned off; the servers in zen-coding's own
+  `.pi/mcp.json` are registered instead. A cloned repository's `.pi/mcp.json` is never
+  read, so it cannot add or redirect servers.
 - **Writes are confined to the checkout.** Guardrails block writes outside the thread's
   working directory (`allowWritesOutsideCwd: false`).
 - **Access control.** `ZEN_SLACK_ALLOWED_USERS` restricts who may drive the bot. Empty

@@ -146,12 +146,14 @@ repository's extensions never execute. Architecture and all options: [docs/slack
 
 ## Research connectors
 
-External tools connect through MCP and are exposed via a single `mcp` proxy tool. A
-connector without credentials is skipped with a warning.
+External tools connect through pi's built-in MCP support. Their tools stay out of the
+model's tool list until needed: the agent finds and calls them from `codemode` scripts.
+A connector without credentials fails to connect and is reported once; the others keep
+working. Check them with `pi mcp list` or `/mcp`.
 
 | Connector | What it gives you | Requires |
 |---|---|---|
-| **alphaXiv** | Paper discovery, full-text Q&A, AI-digested reports, library management | `ALPHAXIV_API_KEY` or `/mcp-auth alphaxiv` |
+| **alphaXiv** | Paper discovery, full-text Q&A, AI-digested reports, library management | `ALPHAXIV_API_KEY` |
 | **paper-search** | Search/download across 24+ sources — arXiv, SSRN, Semantic Scholar, PubMed, OpenAlex, … | [uv](https://docs.astral.sh/uv/) |
 | **GitHub** | Issues, pull requests, code search, notifications (official GitHub MCP server) | `gh auth login` |
 | **Docker MCP Toolkit** | Discover and run catalog MCP servers in isolated containers | Docker Desktop with `docker mcp` |

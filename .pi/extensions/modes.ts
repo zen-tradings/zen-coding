@@ -6,6 +6,10 @@
  *   plan    — read-only: explore and produce a plan, no file mutations
  *
  * The mode applies per session and resets to normal on restart.
+ *
+ * The mode instructions go into a structured system-prompt section rather than
+ * a replacement prompt, so pi records a transcript delta when the mode changes
+ * and keeps the cached prompt prefix (pi >= 0.86 mid-conversation system messages).
  */
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 
@@ -13,18 +17,19 @@ type ZenMode = "normal" | "clarify" | "plan";
 
 const MODES: ZenMode[] = ["normal", "clarify", "plan"];
 
+/** Tag of the XML-wrapped system-prompt section that carries the mode instructions. */
+const MODE_SECTION = "zen_mode";
+
 const MODE_PROMPTS: Record<ZenMode, string | null> = {
   normal: null,
   clarify: [
-    "",
-    "## zen-coding: clarify mode",
+    "zen-coding: clarify mode",
     "Before planning or editing: if the request is ambiguous, underspecified, or could be",
     "interpreted in multiple ways, first ask the user concise clarifying questions and wait",
     "for answers. Only proceed to planning and implementation once the goal is unambiguous.",
   ].join("\n"),
   plan: [
-    "",
-    "## zen-coding: plan mode",
+    "zen-coding: plan mode",
     "You are in read-only planning mode. Do NOT modify any files or run state-changing",
     "commands. Explore the codebase, then produce a concrete step-by-step implementation",
     "plan (files to touch, order of changes, risks, how to verify) and stop.",
@@ -59,9 +64,14 @@ export default function (pi: ExtensionAPI) {
   });
 
   pi.on("before_agent_start", async (event) => {
+    const options = event.systemPromptOptions;
     const extra = MODE_PROMPTS[mode];
-    if (!extra) return;
-    return { systemPrompt: event.systemPrompt + extra };
+    if (extra) {
+      options.sections = { ...options.sections, [MODE_SECTION]: extra };
+    } else if (options.sections && MODE_SECTION in options.sections) {
+      const { [MODE_SECTION]: _dropped, ...rest } = options.sections;
+      options.sections = rest;
+    }
   });
 
   pi.on("tool_call", async (event) => {
