@@ -27,16 +27,12 @@
     "minimatch": "^10.2.5"
   },
   "peerDependencies": {
-    "@earendil-works/pi-ai": "*",
-    "@earendil-works/pi-coding-agent": "*",
-    "typebox": "*"
+    "@earendil-works/pi-coding-agent": "*"
   },
   "devDependencies": {
-    "@earendil-works/pi-ai": "^1.0.2",
     "@earendil-works/pi-coding-agent": "^1.0.2",
     "@types/node": "^22.10.0",
     "tsx": "^4.23.5",
-    "typebox": "1.3.7",
     "typescript": "^5.7.0"
   }
 }

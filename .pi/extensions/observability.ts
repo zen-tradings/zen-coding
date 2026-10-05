@@ -229,13 +229,13 @@ export default function (pi: ExtensionAPI) {
         refs.push(fileRef(cwd, baseIsDir ? join(base, m[1]) : base, { start: n, end: n }));
         if (refs.length >= MAX_REFS) break;
       }
-    } else if (toolName === "exa_search") {
-      // exa_search output: "   <url>" optionally followed by "   published: <date>".
+    } else if (toolName.startsWith("mcp__exa__")) {
+      // Exa MCP output: "URL: <url>" optionally followed by "Published: <date|N/A>".
       const lines = text.split("\n");
       for (let i = 0; i < lines.length && refs.length < MAX_REFS; i++) {
-        const url = /^ {3}(https?:\/\/\S+)$/.exec(lines[i])?.[1];
+        const url = /^URL: (https?:\/\/\S+)$/.exec(lines[i])?.[1];
         if (!url) continue;
-        const published = /^ {3}published: (.+)$/.exec(lines[i + 1] ?? "")?.[1];
+        const published = /^Published: (?!N\/A)(.+)$/.exec(lines[i + 1] ?? "")?.[1];
         const date = published ? new Date(published) : null;
         refs.push({
           kind: "url",

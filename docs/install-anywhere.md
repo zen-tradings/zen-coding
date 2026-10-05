@@ -42,7 +42,6 @@ only** — `.pi/extensions/`:
 | `guardrails.ts` | Denied shell patterns, protected paths, no writes outside the project |
 | `observability.ts` | JSONL traces of latency, tokens, and cost per session |
 | `modes.ts` | `/zen` modes: `normal`, `clarify`, `plan` |
-| `zen-tools/` | `exa_search` (needs `EXA_API_KEY`) |
 
 The quant slash commands (`.pi/prompts/`), skills (`.pi/skills/`), and MCP connectors
 (`.pi/mcp.json`) are *project* resources: pi discovers them when you run it inside the

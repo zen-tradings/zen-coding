@@ -50,8 +50,8 @@ the ongoing run rather than queued as a new turn. `/zen plan`, `/zen clarify`, a
 
 ### Isolation model
 
-- **Extensions always load from zen-coding.** Guardrails, observability, modes, and
-  zen-tools come from this repository — a cloned repository's own `.pi/extensions/`
+- **Extensions always load from zen-coding.** Guardrails, observability, and modes
+  come from this repository — a cloned repository's own `.pi/extensions/`
   is never executed.
 - **MCP configuration is fixed.** SDK sessions add pi's MCP, codemode, and tool-search
   extensions explicitly, with file loading turned off; the servers in zen-coding's own

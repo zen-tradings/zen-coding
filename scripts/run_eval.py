@@ -65,8 +65,8 @@ def checkout(repo: str, commit: str, dest: Path) -> None:
 # Files copied from the real pi config dir into the per-case isolated one, so evals
 # keep model auth but never load machine-global state (installed git extensions,
 # sessions, trust db). Without this, running pi inside a zen-coding clone loads
-# zen-tools twice (clone's .pi/extensions + ~/.pi/agent/git/... install) and pi
-# refuses to start with a tool-name conflict.
+# the zen extensions twice (clone's .pi/extensions + ~/.pi/agent/git/... install)
+# and pi refuses to start on the duplicate command and tool names.
 PI_CONFIG_PASSTHROUGH = ("auth.json", "models.json", "models-store.json", "settings.json")
 
 

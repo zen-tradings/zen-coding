@@ -6,6 +6,12 @@
       "description": "Quant paper discovery, full-text Q&A, AI-digested reports, alphaXiv library",
       "timeout": 60
     },
+    "exa": {
+      "url": "https://mcp.exa.ai/mcp?tools=web_search_exa,web_search_advanced_exa,web_fetch_exa,get_code_context_exa",
+      "headers": { "x-api-key": "${EXA_API_KEY}" },
+      "description": "Exa neural search: web, research papers, code examples and docs, and full-page fetch",
+      "timeout": 60
+    },
     "github": {
       "url": "https://api.githubcopilot.com/mcp/",
       "headers": { "Authorization": "!echo Bearer $(gh auth token)" },

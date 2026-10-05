@@ -38,6 +38,18 @@ to every server and prints its state and errors; `/mcp` shows the same inside a 
 
 ## Connectors
 
+### Exa
+
+- **Endpoint:** `https://mcp.exa.ai/mcp` — Exa's official hosted MCP server, with
+  four tools enabled through the `tools` query parameter.
+- **What it gives you:** `web_search_exa` (neural web search), `web_search_advanced_exa`
+  (category, domain, and date filters, e.g. `research paper` or `news`),
+  `get_code_context_exa` (code examples and library docs from GitHub and the web), and
+  `web_fetch_exa` (a page as clean markdown). All are read-only.
+- **Auth:** `export EXA_API_KEY=...` (dashboard.exa.ai → API Keys), sent as the
+  `x-api-key` header. Exa also serves keyless requests on a rate-limited free tier; to
+  use that, override the server in `~/.pi/agent/mcp.json` without `headers`.
+
 ### alphaXiv
 
 - **Endpoint:** `https://api.alphaxiv.org/mcp/v1`

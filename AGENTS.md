@@ -20,7 +20,7 @@ runs in this repo. See README.md and design.md for the full picture.
 
 - Model provider key (at least one): `DEEPSEEK_API_KEY`, `ANTHROPIC_API_KEY`,
   `GROQ_API_KEY`, `OPENROUTER_API_KEY`, `FIREWORKS_API_KEY`, …
-- `EXA_API_KEY` — optional, enables the `exa_search` tool
+- `EXA_API_KEY` — optional, key for the official Exa MCP connector
 - `ALPHAXIV_API_KEY` — for the alphaXiv MCP server
 - `RENDER_API_KEY` — for the Render MCP server
 - GitHub MCP auth reuses `gh auth token` (no PAT needed)
@@ -51,7 +51,7 @@ runs in this repo. See README.md and design.md for the full picture.
 ## Project layout
 
 - `.pi/extensions/` — guardrails, observability (JSONL traces → `~/.zen/traces/`),
-  `/zen normal|clarify|plan` modes, zen-tools
+  `/zen normal|clarify|plan` modes
 - `.pi/skills/` — shared skills (`wq-alpha-research` is a git submodule;
   clone with `git submodule update --init`)
 - `.pi/prompts/` — shared prompt templates

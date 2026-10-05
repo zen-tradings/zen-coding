@@ -104,7 +104,7 @@ zen-coding is also a [pi package](https://github.com/earendil-works/pi/blob/main
 pi install git:github.com/zen-tradings/zen-coding
 ```
 
-Guardrails, traces, `/zen` modes, and `exa_search` then load in every
+Guardrails, traces, and `/zen` modes then load in every
 project. The quant commands, skills, and connectors are project resources — run `pi`
 inside this repository to use them. See [docs/install-anywhere.md](docs/install-anywhere.md).
 
@@ -153,6 +153,7 @@ working. Check them with `pi mcp list` or `/mcp`.
 
 | Connector | What it gives you | Requires |
 |---|---|---|
+| **Exa** | Neural web search, research papers, code examples and docs, full-page fetch (official Exa MCP server) | `EXA_API_KEY` |
 | **alphaXiv** | Paper discovery, full-text Q&A, AI-digested reports, library management | `ALPHAXIV_API_KEY` |
 | **paper-search** | Search/download across 24+ sources — arXiv, SSRN, Semantic Scholar, PubMed, OpenAlex, … | [uv](https://docs.astral.sh/uv/) |
 | **GitHub** | Issues, pull requests, code search, notifications (official GitHub MCP server) | `gh auth login` |
@@ -217,7 +218,7 @@ produces a `benchmark.json` with per-track pass rates and regressions. Guide:
 | Variable | Purpose |
 |---|---|
 | `FIREWORKS_API_KEY`, `ANTHROPIC_API_KEY`, `OPENAI_API_KEY` | Model provider keys (at least one) |
-| `EXA_API_KEY` | Enables the `exa_search` tool (web, code, paper search) |
+| `EXA_API_KEY` | Key for the official Exa MCP connector (web, paper, and code search) |
 | `ALPHAXIV_API_KEY`, `RENDER_API_KEY` | MCP connector credentials |
 | `WQ_BRAIN_USERNAME`, `WQ_BRAIN_PASSWORD` | WorldQuant BRAIN credentials (`wq-alpha-research`) |
 | `ZEN_TRACE_DIR`, `ZEN_GUARDRAILS_CONFIG` | Trace directory; alternate guardrail rules file |
@@ -233,7 +234,7 @@ npm run agent         # run the pinned pi version against this repository
 
 | Path | Contents |
 |---|---|
-| `.pi/extensions/` | `guardrails.ts`, `observability.ts`, `modes.ts`, `zen-tools/` |
+| `.pi/extensions/` | `guardrails.ts`, `observability.ts`, `modes.ts` |
 | `.pi/prompts/`, `.pi/skills/` | Quant prompt templates; skills (`wq-alpha-research` is a submodule) |
 | `.pi/mcp.json`, `.pi/guardrails.json`, `.pi/settings.json` | Connector, guardrail, and default-model configuration |
 | `src/slack/` | Slack backend (pi SDK) |
