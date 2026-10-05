@@ -51,7 +51,7 @@ in `package.json`, if you prefer not to install pi globally.
 - **Cross-model comparison** — Anthropic, OpenAI, and Fireworks (low-cost); switch
   with `/model` and compare on identical eval tasks.
 - **Research connectors and skills** — alphaXiv, multi-source paper search, GitHub,
-  Docker MCP Toolkit, Render, Mintlify via MCP; WorldQuant BRAIN alpha research as a skill.
+  Render, Mintlify via MCP; WorldQuant BRAIN alpha research as a skill.
 - **Slack bot** — @-mention with a GitHub link; the agent clones the repo and streams
   its reply into the thread.
 - **Observability and evals** — JSONL traces of latency, tokens, and cost per session;
@@ -156,7 +156,6 @@ working. Check them with `pi mcp list` or `/mcp`.
 | **alphaXiv** | Paper discovery, full-text Q&A, AI-digested reports, library management | `ALPHAXIV_API_KEY` |
 | **paper-search** | Search/download across 24+ sources — arXiv, SSRN, Semantic Scholar, PubMed, OpenAlex, … | [uv](https://docs.astral.sh/uv/) |
 | **GitHub** | Issues, pull requests, code search, notifications (official GitHub MCP server) | `gh auth login` |
-| **Docker MCP Toolkit** | Discover and run catalog MCP servers in isolated containers | Docker Desktop with `docker mcp` |
 | **Render** | Inspect and manage services deployed on Render | `RENDER_API_KEY` |
 | **Mintlify docs** | Live search over Mintlify's documentation | — |
 

@@ -32,7 +32,7 @@ To make a small, frequently used tool visible to the model directly, set
 Every MCP call goes through pi's tool pipeline, so zen guardrails and `/zen plan` see
 it like any other tool call.
 
-A connector that cannot connect (missing key, expired token, Docker not running) is
+A connector that cannot connect (missing key, expired token, local command not installed) is
 reported once after startup and the session continues without it. `pi mcp list` connects
 to every server and prints its state and errors; `/mcp` shows the same inside a session.
 
@@ -77,18 +77,6 @@ to every server and prints its state and errors; `/mcp` shows the same inside a 
   `gh` is logged in as.
 - **Restricting scope:** append `/readonly` to the URL for read-only access, or scope
   to a toolset with `/x/<toolset>` (e.g. `/x/issues`).
-
-### Docker MCP Toolkit
-
-- **Runs locally:** `docker mcp gateway run` (stdio) — requires Docker Desktop with the
-  MCP Toolkit plugin (`docker mcp`).
-- **What it gives you:** Docker's MCP gateway and its dynamic meta-tools (`mcp-find`,
-  `mcp-add`, `mcp-exec`, …), so the agent can discover and invoke catalog servers on
-  demand. Each server runs in its own container with the gateway's secret and network
-  isolation.
-- **Auth:** none for the gateway itself. Individual servers may need
-  `docker mcp secret` entries. Pre-enable servers with
-  `docker mcp server enable <name>` to pin a fixed toolset.
 
 ### Render
 
