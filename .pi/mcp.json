@@ -1,37 +1,74 @@
 {
   "mcpServers": {
+    "alpaca": {
+      "command": "uvx",
+      "args": [
+        "alpaca-mcp-server",
+        "serve"
+      ],
+      "env": {
+        "ALPACA_API_KEY": "${ALPACA_API_KEY}",
+        "ALPACA_SECRET_KEY": "${ALPACA_SECRET_KEY}",
+        "ALPACA_PAPER_TRADE": "True"
+      },
+      "description": "Market data (Alpaca): stock, option and crypto bars, quotes, trades, snapshots, corporate actions, trading calendar; account/position reads. Order placement and position changes are hidden.",
+      "timeout": 120,
+      "toolExposure": {
+        "place_*": "hidden",
+        "cancel_*": "hidden",
+        "close_*": "hidden",
+        "exercise_*": "hidden",
+        "create_watchlist": "hidden",
+        "update_watchlist*": "hidden",
+        "delete_watchlist*": "hidden",
+        "add_asset_to_watchlist*": "hidden",
+        "remove_asset_from_watchlist*": "hidden"
+      }
+    },
     "alphaxiv": {
       "url": "https://api.alphaxiv.org/mcp/v1",
-      "headers": { "Authorization": "Bearer ${ALPHAXIV_API_KEY}" },
+      "headers": {
+        "Authorization": "Bearer ${ALPHAXIV_API_KEY}"
+      },
       "description": "Quant paper discovery, full-text Q&A, AI-digested reports, alphaXiv library",
       "timeout": 60
     },
     "exa": {
       "url": "https://mcp.exa.ai/mcp?tools=web_search_exa,web_search_advanced_exa,web_fetch_exa,get_code_context_exa",
-      "headers": { "x-api-key": "${EXA_API_KEY}" },
+      "headers": {
+        "x-api-key": "${EXA_API_KEY}"
+      },
       "description": "Exa neural search: web, research papers, code examples and docs, and full-page fetch",
       "timeout": 60
     },
     "github": {
       "url": "https://api.githubcopilot.com/mcp/",
-      "headers": { "Authorization": "!echo Bearer $(gh auth token)" },
+      "headers": {
+        "Authorization": "!echo Bearer $(gh auth token)"
+      },
       "description": "GitHub issues, pull requests, code search, notifications (as the gh CLI user)",
       "timeout": 60
-    },
-    "paper-search": {
-      "command": "uvx",
-      "args": ["--with", "mcp<2", "paper-search-mcp"],
-      "description": "Search and download papers across arXiv, SSRN, Semantic Scholar, PubMed, OpenAlex, and more",
-      "timeout": 120
     },
     "mintlify-docs": {
       "url": "https://www.mintlify.com/docs/mcp",
       "description": "Live search over the official Mintlify documentation",
       "timeout": 60
     },
+    "paper-search": {
+      "command": "uvx",
+      "args": [
+        "--with",
+        "mcp<2",
+        "paper-search-mcp"
+      ],
+      "description": "Search and download papers across arXiv, SSRN, Semantic Scholar, PubMed, OpenAlex, and more",
+      "timeout": 120
+    },
     "render": {
       "url": "https://mcp.render.com/mcp",
-      "headers": { "Authorization": "Bearer ${RENDER_API_KEY}" },
+      "headers": {
+        "Authorization": "Bearer ${RENDER_API_KEY}"
+      },
       "description": "Inspect and manage services, deploys, and logs on Render",
       "timeout": 60
     }

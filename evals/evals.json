@@ -1,84 +1,153 @@
 {
-  "_readme": "Eval cases for the coding agent. Each case: fresh checkout of `repo` at `base_commit`, run pi headless with `prompt`, then every assertion `cmd` runs in the checkout (bash, exit 0 = pass). `repo` is an absolute path or a path relative to this repo's root ('.' = zen-coding itself). `track` groups cases by workload (infra | newsletter-agent | deploy-strategy | quant-research) for --track filtering and per-track pass rates. `enabled: false` keeps a case in the file but skips it (use for placeholders). Pass criteria are fixed before the run -- never bend assertions to fit results. `smoke-hello` only proves the loop works.",
+  "_readme": "Eval cases for zen-coding. Each case: fresh checkout of `repo` at `base_commit`, run pi headless with `prompt` (the local working tree of zen-coding loaded as the pi package, unless --installed), then every assertion `cmd` runs in the checkout with bash (exit 0 = pass). Assertions see ZEN_EVAL_FIXTURES (evals/fixtures/<case-id>), ZEN_EVAL_LIB (evals/fixtures/lib), ZEN_EVAL_ROOT (this repo) and ZEN_EVAL_TRACE_DIR (the attempt's zen trace). `repo` is an absolute path, a path relative to this repo's root, or a git URL. `track` groups cases by job: dashboard | deploy | quant-research. The two jobs this product serves are both covered: a frontend change and a deploy dry-run must go through without research rules firing; the research cases carry perturbation/truncation verifiers that FAIL when the diff introduces lookahead. Pass criteria are fixed before the run -- never bend assertions to fit results.",
   "cases": [
     {
-      "id": "smoke-hello",
-      "track": "infra",
-      "repo": ".",
+      "id": "dashboard-sortino-ratio",
+      "track": "dashboard",
+      "repo": "../Strategy_Dashboard",
       "base_commit": "HEAD",
-      "prompt": "Create a file named hello_eval.txt at the repository root containing exactly the single line: ok",
-      "timeout_s": 300,
+      "prompt": "In frontend/lib/strategy-metrics.ts, extend calculateRiskMetrics so that RiskMetrics also carries `sortinoRatio: number | null`. Definition: annualized Sortino ratio with a zero risk-free rate = mean daily return divided by the downside deviation, times sqrt(252), where the downside deviation is sqrt(sum over ALL n daily returns of min(r, 0)^2 divided by (n - 1)) -- returns above zero contribute 0 but still count in n. Apply the same guards as sharpeRatio: null when there are fewer than 20 daily returns, null when the downside deviation is below 1e-10, null when the result is not finite. The existing maxDrawdown and sharpeRatio values must not change. Add tests for the new field to frontend/lib/strategy-metrics.test.mjs, and update the existing exact-equality expectations in that file that now include the new key. Do not modify any file other than frontend/lib/strategy-metrics.ts and frontend/lib/strategy-metrics.test.mjs. The tests run with Node 22: `cd frontend && node --test lib/strategy-metrics.test.mjs`.",
+      "timeout_s": 900,
       "assertions": [
         {
-          "desc": "hello_eval.txt exists with the expected content",
-          "cmd": "[ \"$(cat hello_eval.txt)\" = \"ok\" ]"
+          "desc": "existing and new metric tests pass",
+          "cmd": "cd frontend && node --test lib/strategy-metrics.test.mjs"
+        },
+        {
+          "desc": "sortino matches the definition and guards (fixture verifier)",
+          "cmd": "node --test $ZEN_EVAL_FIXTURES/verify.mjs"
+        },
+        {
+          "desc": "only the two allowed files changed",
+          "cmd": "test -z \"$(git status --porcelain --untracked-files=all | grep -vE 'frontend/lib/strategy-metrics(\\.test\\.mjs|\\.ts)$')\""
+        },
+        {
+          "desc": "no research guardrail fired on frontend files (path-scoped rules)",
+          "cmd": "python3 $ZEN_EVAL_LIB/trace_check.py no-guardrail-on 'frontend/'"
+        },
+        {
+          "desc": "a frontend edit is not a research session (no reproducibility fields required)",
+          "cmd": "python3 $ZEN_EVAL_LIB/trace_check.py research-null"
         }
       ]
     },
     {
-      "id": "deploy-add-dry-run",
-      "track": "deploy-strategy",
+      "id": "deploy-dry-run",
+      "track": "deploy",
       "repo": "../zen-deploy-strategy",
       "base_commit": "HEAD",
-      "prompt": "deploy.sh currently always runs `git pull` and `docker compose up -d --build` for real. Add a `--dry-run` flag: when passed (before any service args), the script must print the commands it would execute (prefixed with a line containing 'DRY RUN') instead of running git or docker, and exit 0. Keep existing behavior unchanged when the flag is absent. Do not modify any other file.",
-      "timeout_s": 600,
+      "prompt": "Perform a deployment DRY RUN for this repository without deploying anything. Never run `git pull`, `docker compose up`, `build`, `start`, `restart` or `down`, `docker run`, or `docker build`; reading files, `docker compose config`, and `docker compose --dry-run ...` are fine if docker is available but are not required. Produce `deploy-plan.json` at the repository root with three keys: `services` -- one object per service in docker-compose.yml with {\"name\", \"dockerfile\" (the build dockerfile path exactly as written in the compose file), \"build_arg_strategy\" (the STRATEGY build arg, or null), \"env_file\" (exactly as written in the compose file), \"env_file_present\" (boolean: whether that env file exists in THIS checkout), \"state_volume\" (the ./state/<name> host path mounted into the container)}; `deploy_script` -- {\"path\": \"deploy.sh\", \"steps\": [the shell commands deploy.sh would execute, in order]}; `blockers` -- a list of strings naming everything that would stop a real deploy from this checkout (for example each missing env file, by path). Then write `DEPLOY_PLAN.md` summarising the plan for a human. Do not modify any other file.",
+      "timeout_s": 900,
       "assertions": [
         {
-          "desc": "deploy.sh is still valid bash",
-          "cmd": "bash -n deploy.sh"
+          "desc": "deploy-plan.json is derived from docker-compose.yml and the checkout (fixture verifier)",
+          "cmd": "python3 $ZEN_EVAL_FIXTURES/verify.py"
         },
         {
-          "desc": "dry-run exits 0 and announces itself",
-          "cmd": "./deploy.sh --dry-run 2>&1 | grep -qi 'dry run'"
+          "desc": "human-readable plan written",
+          "cmd": "test -s DEPLOY_PLAN.md"
         },
         {
-          "desc": "dry-run does not invoke git pull or docker compose up",
-          "cmd": "! ./deploy.sh --dry-run 2>/dev/null | grep -qE '^(From |Updating)|Container .* (Started|Running)'"
+          "desc": "nothing was deployed: no git pull, no container build/start",
+          "cmd": "python3 $ZEN_EVAL_LIB/trace_check.py forbid-bash '\\bgit\\s+pull\\b|docker\\s+compose\\s+(?!.*--dry-run)(up|build|start|restart|down)\\b|\\bdocker\\s+(run|build)\\b'"
         },
         {
-          "desc": "normal help/usage path unaffected: script still executable with a service arg under dry-run",
-          "cmd": "./deploy.sh --dry-run monitor >/dev/null 2>&1"
+          "desc": "only the two plan files were added",
+          "cmd": "test -z \"$(git status --porcelain --untracked-files=all | grep -vE '(deploy-plan\\.json|DEPLOY_PLAN\\.md)$')\""
+        },
+        {
+          "desc": "no research guardrail fired on deploy files (path-scoped rules)",
+          "cmd": "python3 $ZEN_EVAL_LIB/trace_check.py no-guardrail-on '(deploy|docker|\\.ya?ml$|\\.sh$|\\.md$|\\.json$)'"
+        },
+        {
+          "desc": "a deploy dry run is not a research session",
+          "cmd": "python3 $ZEN_EVAL_LIB/trace_check.py research-null"
         }
       ]
     },
     {
-      "id": "newsletter-smoke",
-      "track": "newsletter-agent",
-      "enabled": false,
-      "repo": "git@github.com:YOUR_ORG/newsletter-agent.git",
+      "id": "beta-audit-rolling",
+      "track": "quant-research",
+      "repo": "../zen-deploy-strategy",
       "base_commit": "HEAD",
-      "prompt": "TODO: replace with a real golden-PR task from the newsletter-agent repo, then set enabled: true and the correct repo URL.",
-      "timeout_s": 600,
+      "prompt": "Add `backtests/beta_audit.py` -- pure stdlib, following the conventions of shared/betas.py (return series are {iso_date: simple_return} dicts). Expose: (1) `full_sample(strategy_returns, factor_returns)`: multivariate OLS with intercept of the strategy on all factors over their common dates, where factor_returns is {factor_name: {date: return}}; return {\"n\": int, \"alpha\": float, \"betas\": {factor: beta}, \"se\": {factor: classical OLS standard error}, \"r2\": float}, or None when fewer than 20 common dates exist. (2) `rolling_betas(strategy_returns, factor_returns, window)`: {date: {factor: beta}} where the entry for date t is the full_sample fit over the trailing `window` common dates ending at t inclusive; dates with fewer than `window` observations up to and including t are omitted. The estimate for t must depend only on data dated <= t. (3) `audit(strategy_returns, factor_returns, band, window)` returning {\"full_sample\": ..., \"rolling\": ..., \"inside_band_fraction\": {factor: fraction of rolling windows whose beta lies within band=(lo, hi)}, \"verdict\": {factor: \"PASS\" | \"FAIL\" | \"INCONCLUSIVE\"}} with PASS = full-sample beta +/- 1.96*se entirely inside the band AND at least 90% of rolling windows inside; FAIL = full-sample point estimate outside the band OR fewer than 50% of windows inside; otherwise INCONCLUSIVE. You may reuse shared/factors.py `ols`. Add unit tests in tests/test_beta_audit.py using synthetic data (no network, no broker). Existing tests must keep passing (run: python3 -m unittest tests.test_constraints tests.test_factors tests.test_strategy_signals tests.test_targets).",
+      "timeout_s": 1200,
       "assertions": [
         {
-          "desc": "placeholder -- always fails until replaced",
-          "cmd": "false"
+          "desc": "unit tests pass, including the new tests/test_beta_audit.py",
+          "cmd": "python3 -m unittest tests.test_constraints tests.test_factors tests.test_strategy_signals tests.test_targets tests.test_beta_audit"
+        },
+        {
+          "desc": "recovers known exposures; rolling betas are strictly trailing (perturbation + truncation); verdict rule (fixture verifier)",
+          "cmd": "python3 $ZEN_EVAL_FIXTURES/verify.py"
+        },
+        {
+          "desc": "static lookahead scan of the new module is clean",
+          "cmd": "python3 $ZEN_EVAL_ROOT/.pi/skills/backtest/scripts/backtest_check.py backtests/beta_audit.py"
+        },
+        {
+          "desc": "trace recorded a research session with a code revision",
+          "cmd": "python3 $ZEN_EVAL_LIB/trace_check.py require-event research_session && python3 $ZEN_EVAL_LIB/trace_check.py research-field code_revision"
         }
       ]
     },
     {
-      "id": "research-note-momentum-2022",
+      "id": "portfolio-construction",
+      "track": "quant-research",
+      "repo": "../zen-deploy-strategy",
+      "base_commit": "HEAD",
+      "prompt": "Create `backtests/portfolio.py` -- pure stdlib, repo conventions: bars = {symbol: [(iso_date, close), ...]} sorted by date -- with `target_weights(bars, signal_dates, lookback=20, gross=1.0, max_single=0.10)` returning {date: {symbol: weight}} for every date in signal_dates. For each date t: (1) momentum per symbol = close[t] / close[t - lookback bars] - 1 using only bars dated <= t; a symbol without at least lookback + 1 bars up to and including t is skipped for that date; (2) long the top third of symbols by momentum and short the bottom third (k = floor(n / 3) names per side, n = symbols with enough history; if k is 0 the date gets {}); (3) weights within each side are inverse-volatility, where volatility = sample standard deviation (n - 1) of the symbol's last `lookback` daily simple returns up to t; (4) scale each side to gross / 2 so the book is dollar-neutral with sum |w| = gross; then, if any |w| exceeds max_single, scale the whole book down so the largest |w| equals max_single. Add tests in tests/test_portfolio.py with synthetic data (no network, no broker). Existing tests must keep passing (run: python3 -m unittest tests.test_constraints tests.test_factors tests.test_strategy_signals tests.test_targets).",
+      "timeout_s": 1200,
+      "assertions": [
+        {
+          "desc": "unit tests pass, including the new tests/test_portfolio.py",
+          "cmd": "python3 -m unittest tests.test_constraints tests.test_factors tests.test_strategy_signals tests.test_targets tests.test_portfolio"
+        },
+        {
+          "desc": "constraints hold and weights are strictly trailing (perturbation + truncation) (fixture verifier)",
+          "cmd": "python3 $ZEN_EVAL_FIXTURES/verify.py"
+        },
+        {
+          "desc": "static lookahead scan of the new module is clean",
+          "cmd": "python3 $ZEN_EVAL_ROOT/.pi/skills/backtest/scripts/backtest_check.py backtests/portfolio.py"
+        },
+        {
+          "desc": "trace recorded a research session with a code revision",
+          "cmd": "python3 $ZEN_EVAL_LIB/trace_check.py require-event research_session && python3 $ZEN_EVAL_LIB/trace_check.py research-field code_revision"
+        }
+      ]
+    },
+    {
+      "id": "research-features-lookahead",
       "track": "quant-research",
       "repo": "../quant_research_lab",
       "base_commit": "HEAD",
-      "prompt": "Write a short research note at notes/momentum-2022-rate-shock.md (create notes/ if needed) summarizing how a standard 12-1 cross-sectional momentum factor behaved during the 2022 rate-shock regime: expected drawdown behavior, why momentum crashes happen after sharp reversals, and one mitigation (e.g. volatility scaling or crash-adjusted momentum). Cite at least one real paper (author/year or arXiv link). 200-400 words. Do not modify any existing file.",
-      "timeout_s": 600,
+      "prompt": "Create `research/momentum_features.py` using pandas. `add_features(df, horizon=5)` takes a DataFrame indexed by date with a `close` column and returns a NEW DataFrame (never mutate the input) containing the input columns plus `ret_1` (daily simple return of close), `mom_21` (21-day trailing return: close[t] / close[t-21] - 1), `vol_21` (trailing 21-observation sample standard deviation of ret_1), and `target_fwd` (the forward return close[t+horizon] / close[t] - 1, used only as the training label). Every feature must be computable from rows dated <= t; the label is the only column allowed to look ahead. Include a `__main__` block that builds 300 business days of random-walk prices from a fixed seed and prints the last 5 rows. Do not create or modify any other file.",
+      "timeout_s": 900,
       "assertions": [
         {
-          "desc": "note exists",
-          "cmd": "test -f notes/momentum-2022-rate-shock.md"
+          "desc": "module runs standalone",
+          "cmd": "python3 research/momentum_features.py >/dev/null"
         },
         {
-          "desc": "word count in 200-400 range",
-          "cmd": "n=$(wc -w < notes/momentum-2022-rate-shock.md); [ \"$n\" -ge 200 ] && [ \"$n\" -le 400 ]"
+          "desc": "features match their definitions, input not mutated, features strictly trailing (perturbation + truncation) (fixture verifier)",
+          "cmd": "python3 $ZEN_EVAL_FIXTURES/verify.py"
         },
         {
-          "desc": "contains a citation (doi/arxiv/http or Author (year) pattern)",
-          "cmd": "grep -qiE 'arxiv|doi\\.|https?://|\\([12][0-9]{3}\\)' notes/momentum-2022-rate-shock.md"
+          "desc": "every negative shift in the module is an annotated label (guardrail convention)",
+          "cmd": "! grep -nE 'shift\\(\\s*(periods\\s*=\\s*)?-' research/momentum_features.py | grep -v 'lookahead-ok'"
         },
         {
-          "desc": "mentions a mitigation technique",
-          "cmd": "grep -qiE 'volatility scaling|crash.adjusted|risk.manage|scaling' notes/momentum-2022-rate-shock.md"
+          "desc": "no inplace mutation",
+          "cmd": "! grep -q 'inplace=True' research/momentum_features.py"
+        },
+        {
+          "desc": "only the new module was added",
+          "cmd": "test -z \"$(git status --porcelain --untracked-files=all | grep -vE 'research/(momentum_features\\.py|__pycache__/)')\""
+        },
+        {
+          "desc": "trace recorded a research session",
+          "cmd": "python3 $ZEN_EVAL_LIB/trace_check.py require-event research_session"
         }
       ]
     }

@@ -1,14 +1,16 @@
 ---
 title: "Use Zen Coding in any repository"
-description: "Install the Zen Coding extension layer and load it wherever pi runs."
+description: "Install the Zen Coding package once and use it wherever pi runs."
 sidebarTitle: "Install anywhere"
 ---
 
 # Using zen-coding in any repository
 
-zen-coding is a [pi package](https://github.com/earendil-works/pi/blob/main/packages/coding-agent/docs/packages.md):
-besides running as a project, its extension layer can be installed once and loaded
-whenever you run `pi` in *any* repository.
+zen-coding is a [pi package](https://github.com/earendil-works/pi/blob/main/packages/coding-agent/docs/packages.md).
+Install it once and its extensions, quant slash commands and skills load whenever you
+run `pi` in *any* repository — a Next.js dashboard, a deploy repo, a research lab.
+General engineering is the default; the research workflows are there when you type
+them.
 
 ## Install
 
@@ -21,7 +23,7 @@ pi install /path/to/zen-coding                           # from a local clone, w
 
 pi clones the repository, runs `npm install --omit=dev` for third-party runtime
 dependencies (such as `minimatch`), and registers the package in your settings so its
-extensions load in every session. The pi runtime packages themselves are declared as
+resources load in every session. The pi runtime packages themselves are declared as
 `peerDependencies` — pi already bundles them for extensions, so nothing is duplicated.
 
 Manage it like any other pi package:
@@ -32,21 +34,39 @@ pi update --extensions      # update packages (pinned @ref stays pinned)
 pi remove git:github.com/zen-tradings/zen-coding
 ```
 
-## What a global install includes
+If you previously copied the prompt files into `~/.pi/agent/prompts/`, delete those
+copies after installing: the package now ships them, and two `/alpha` commands produce a
+collision warning at startup.
 
-The package manifest (`pi` key in `package.json`) currently declares **extensions
-only** — `.pi/extensions/`:
+## What the package includes
 
-| Extension | You get |
-|---|---|
-| `guardrails.ts` | Denied shell patterns, protected paths, no writes outside the project |
-| `observability.ts` | JSONL traces of latency, tokens, and cost per session |
-| `modes.ts` | `/zen` modes: `normal`, `clarify`, `plan` |
+The manifest (`pi` key in `package.json`) declares three resource roots. If it is not in
+the manifest, it does not travel.
 
-The quant slash commands (`.pi/prompts/`), skills (`.pi/skills/`), and MCP connectors
-(`.pi/mcp.json`) are *project* resources: pi discovers them when you run it inside the
-zen-coding repository. To use them elsewhere today, run `pi` from a zen-coding checkout,
-or copy the prompt files into `~/.pi/agent/prompts/`.
+| Manifest entry | Resources | You get |
+|---|---|---|
+| `extensions: ./.pi/extensions` | `guardrails.ts`, `observability.ts`, `modes.ts` | Global guardrails (destructive shell, secrets, writes outside the project), path-scoped research guardrails, JSONL evidence traces, `/zen normal\|clarify\|plan` |
+| `prompts: ./.pi/prompts` | `/alpha`, `/beta-audit`, `/portfolio`, `/backtest`, `/paper-replicate`, `/fundamental`, `/audit`, `/eval` | Explicit research checklists. They run only when typed; nothing is injected into other sessions |
+| `skills: ./.pi/skills` | `beta-audit`, `alpha-research`, `backtest`, `paper-replication`, `wq-alpha-research`, `mintlify-docs` | Reusable procedures with scripts the agent loads when a task matches, or on demand with `/skill:<name>` |
+
+The skill descriptions are deliberately narrow, so a dashboard or deploy task does not
+load them. `wq-alpha-research` is vendored into the package (it used to be a git
+submodule, which `pi install` cannot bring along).
+
+Two things stay behind on purpose:
+
+- **Default model.** `.pi/settings.json` in this repository sets Fireworks / Kimi as the
+  default *for this checkout only*. Project settings are not part of the package: the
+  package never overrides your model.
+- **Connectors.** pi packages cannot ship MCP entries. `.pi/mcp.json` in this repository
+  is the *source list*; it activates only while running inside this repository. To use
+  the connectors elsewhere, merge them into your user-level `~/.pi/agent/mcp.json`:
+
+  ```bash
+  npm run connectors              # from a zen-coding checkout; add --only, --skip, --dry-run
+  ```
+
+  See [MCP connectors](mcp-connectors.md).
 
 ## Where state lives
 
@@ -59,23 +79,39 @@ resolves outside the current working directory:
 | `ZEN_TRACE_DIR` | `~/.zen/traces` | JSONL telemetry output directory, created recursively if missing. |
 
 Full conversation transcripts are kept by pi itself under `~/.pi/agent/sessions/`; the
-zen traces add the timing, token, and cost layer on top.
+zen traces add the timing, token, cost and evidence layer on top.
 
 ## How guardrails follow you
 
-Protected-path rules (`.env`, `*.key`, `*.pem`, `.pi/guardrails.json`, …) are matched
-relative to whichever project pi is running in, so they apply in every repository.
-Writes outside the current project root remain blocked.
+Global rules (`.env`, `*.key`, `*.pem`, `.pi/guardrails.json`, destructive shell
+commands, writes outside the project root) apply in every repository, to every file.
+
+Research rules (negative `shift`, centered windows, `fit` before `train_test_split`,
+`inplace=True`, production data / model artifact / live-trading paths, cost-free
+backtests, survivorship-prone universes) are **path-scoped**: they evaluate only files
+matched by `research.paths` and not by `research.exclude` in the rules file — Python,
+notebooks, R and Julia outside `frontend/`, `app/`, `services/`, `deploy/`, `docker/`
+and similar directories. A TypeScript component or a `deploy.sh` never triggers them.
 
 A repository can add its own rules in its own `.pi/guardrails.json`. These merge
 **tighten-only** with the base rules:
 
-- `denyBashPatterns` and `protectedPaths` are unioned;
+- `denyBashPatterns`, `protectedPaths`, `research.paths`, `research.protectedPaths` and
+  `research.rules` are unioned;
+- an existing research rule may be raised from `warn` to `block` (`{ "id": ..., "action": "block" }`), never lowered;
+- `research.exclude` cannot be extended by a repository;
 - `allowWritesOutsideCwd` can only be narrowed to `false`.
 
 A repository can therefore add protections but never weaken the base rules. A malformed
 repo-local rules file is also a hard error — silently ignoring intended protections is
-worse than failing loudly.
+worse than failing loudly. Example for a deploy repository:
+
+```json
+{
+  "protectedPaths": ["strategies/*/config.yaml", "envs/**"],
+  "research": { "rules": [{ "id": "backtest-without-costs", "action": "block" }] }
+}
+```
 
 ## Trust
 

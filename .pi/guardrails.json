@@ -7,11 +7,114 @@
   "protectedPaths": [
     ".env",
     ".env.*",
+    "**/.env",
+    "**/.env.*",
+    "**/*.env",
     "**/*.pem",
     "**/*.key",
     ".zen/**",
     ".git/**",
     ".pi/guardrails.json"
   ],
-  "allowWritesOutsideCwd": false
+  "allowWritesOutsideCwd": false,
+  "research": {
+    "paths": ["**/*.py", "**/*.ipynb", "**/*.R", "**/*.r", "**/*.jl"],
+    "exclude": [
+      "**/frontend/**",
+      "**/web/**",
+      "**/ui/**",
+      "**/static/**",
+      "**/templates/**",
+      "**/app/**",
+      "**/api/**",
+      "**/server/**",
+      "**/services/**",
+      "**/deploy/**",
+      "**/deployment/**",
+      "**/docker/**",
+      "**/infra/**",
+      "**/migrations/**",
+      "**/node_modules/**",
+      "**/.venv/**",
+      "**/site-packages/**"
+    ],
+    "protectedPaths": [
+      "**/data/prod/**",
+      "**/data/production/**",
+      "**/prod_data/**",
+      "**/production_data/**",
+      "**/models/prod/**",
+      "**/models/production/**",
+      "**/artifacts/prod/**",
+      "**/artifacts/production/**",
+      "**/models/**/*.pkl",
+      "**/models/**/*.joblib",
+      "**/models/**/*.h5",
+      "**/models/**/*.keras",
+      "**/models/**/*.pt",
+      "**/models/**/*.pth",
+      "**/models/**/*.onnx",
+      "**/models/**/*.safetensors",
+      "**/live/**",
+      "**/live_trading/**",
+      "**/live-trading/**",
+      "**/live.{yaml,yml,json,toml}",
+      "**/*.live.{yaml,yml,json,toml}",
+      "**/live_config*",
+      "**/live-config*"
+    ],
+    "rules": [
+      {
+        "id": "lookahead-shift",
+        "action": "block",
+        "requires": "\\b(import\\s+(pandas|polars|modin|cudf|dask)|from\\s+(pandas|polars|modin|cudf|dask)\\b)",
+        "patterns": [
+          "\\.shift\\(\\s*-\\s*\\d",
+          "\\.shift\\(\\s*periods\\s*=\\s*-\\s*\\d",
+          "\\.shift\\(\\s*-\\s*[A-Za-z_]",
+          "\\.(pct_change|diff)\\(\\s*(periods\\s*=\\s*)?-\\s*(\\d|[A-Za-z_])",
+          "\\.rolling\\([^)]*center\\s*=\\s*True"
+        ],
+        "allowMarker": "lookahead-ok",
+        "message": "negative shift / centered window reads future rows (lookahead bias). If this line builds a forward-looking LABEL rather than a feature, annotate it with `# lookahead-ok: <reason>` so reviewers can audit it."
+      },
+      {
+        "id": "fit-before-split",
+        "action": "block",
+        "check": "fit-before-split",
+        "allowMarker": "lookahead-ok",
+        "message": "a .fit()/.fit_transform() call precedes train_test_split() in this file: the model or scaler sees test data (lookahead). Split first, then fit on the training slice only."
+      },
+      {
+        "id": "inplace-mutation",
+        "action": "block",
+        "requires": "\\b(import\\s+(pandas|modin|cudf)|from\\s+(pandas|modin|cudf)\\b)",
+        "patterns": ["\\binplace\\s*=\\s*True\\b"],
+        "allowMarker": "inplace-ok",
+        "message": "inplace=True mutates a DataFrame that other experiments may share (cross-contamination). Assign the result instead (df = df.op(...)). Annotate with `# inplace-ok: <reason>` only for a frame that is provably local."
+      },
+      {
+        "id": "backtest-without-costs",
+        "action": "warn",
+        "check": "backtest-without-costs",
+        "backtestMarkers": ["\\bbacktest", "\\bsharpe\\b", "\\bpnl\\b", "\\bequity_curve\\b", "\\bmax_drawdown\\b", "\\brebalance"],
+        "costMarkers": ["\\bcost", "\\bcommission", "\\bslippage", "\\bfee\\b", "\\bfees\\b", "\\bspread", "\\bbps\\b", "\\bimpact\\b"],
+        "message": "this backtest has no transaction-cost model (no cost/commission/slippage/fee/spread term). Report results as gross-of-cost or add a cost assumption."
+      },
+      {
+        "id": "survivorship-universe",
+        "action": "warn",
+        "patterns": [
+          "List_of_S%26P_500_companies",
+          "\\bsp500_tickers\\b",
+          "\\bget_sp500\\w*\\(",
+          "\\bnasdaq_?100_tickers\\b",
+          "\\bcurrent_constituents\\b",
+          "\\bconstituents_today\\b",
+          "\\btickers\\.(nasdaq|sp500|dow)\\b"
+        ],
+        "message": "the universe is built from today's index constituents: that is survivorship-biased. Use point-in-time membership including delisted names, or state the bias in the results."
+      }
+    ]
+  }
 }

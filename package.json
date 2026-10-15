@@ -10,12 +10,20 @@
   "pi": {
     "extensions": [
       "./.pi/extensions"
+    ],
+    "prompts": [
+      "./.pi/prompts"
+    ],
+    "skills": [
+      "./.pi/skills"
     ]
   },
   "scripts": {
     "agent": "pi",
     "slack": "tsx src/slack/index.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "node --import tsx --test tests/*.test.ts",
+    "connectors": "node scripts/install-connectors.mjs"
   },
   "engines": {
     "node": ">=22"

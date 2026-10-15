@@ -8,12 +8,24 @@ iteration into benchmark.json.
 
 Usage:
   python3 scripts/run_eval.py                 # run all cases, next iteration number
-  python3 scripts/run_eval.py smoke-hello     # only this case id
-  python3 scripts/run_eval.py --track deploy-strategy   # only one track
+  python3 scripts/run_eval.py deploy-dry-run  # only this case id
+  python3 scripts/run_eval.py --track quant-research   # only one track
   python3 scripts/run_eval.py --model deepseek --provider deepseek
   python3 scripts/run_eval.py --iteration 3   # write into iteration-3 explicitly
   python3 scripts/run_eval.py --clean         # delete each checkout after its run
   python3 scripts/run_eval.py --runs 3        # 3 attempts per case (variance estimate)
+  python3 scripts/run_eval.py --installed     # load the packages from your settings.json
+                                              # instead of this working tree
+
+By default the zen-coding WORKING TREE is loaded as the pi package under test
+(settings.json `packages` is replaced by this repo's path in the isolated pi
+home), so evals measure local changes. --installed keeps your own package list.
+
+Assertions run in the checkout with these extra environment variables:
+  ZEN_EVAL_FIXTURES   evals/fixtures/<case-id>   (verifier scripts for the case)
+  ZEN_EVAL_LIB        evals/fixtures/lib         (trace_check.py and helpers)
+  ZEN_EVAL_ROOT       this repository
+  ZEN_EVAL_TRACE_DIR  the attempt's zen trace directory (JSONL, schema v2)
 
 Each case runs `--runs` independent attempts (fresh checkout each) under
 <case-id>/attempts/attempt-k/; the case-level result.json aggregates them:
@@ -40,6 +52,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 EVALS = ROOT / "evals"
 RUNS = EVALS / "runs"
+FIXTURES = EVALS / "fixtures"
 
 
 def sh(cmd: list[str], cwd: Path | None = None, timeout: int | None = None) -> subprocess.CompletedProcess:
@@ -70,7 +83,7 @@ def checkout(repo: str, commit: str, dest: Path) -> None:
 PI_CONFIG_PASSTHROUGH = ("auth.json", "models.json", "models-store.json", "settings.json")
 
 
-def isolated_pi_env(cdir: Path) -> dict:
+def isolated_pi_env(cdir: Path, installed: bool) -> dict:
     src = Path(os.environ.get("PI_CODING_AGENT_DIR", Path.home() / ".pi" / "agent"))
     pi_home = cdir / "pi-home"
     pi_home.mkdir(parents=True, exist_ok=True)
@@ -78,8 +91,28 @@ def isolated_pi_env(cdir: Path) -> dict:
         f = src / name
         if f.is_file():
             shutil.copy2(f, pi_home / name)
+    settings_file = pi_home / "settings.json"
+    try:
+        settings = json.loads(settings_file.read_text()) if settings_file.is_file() else {}
+    except json.JSONDecodeError:
+        settings = {}
+    if not installed:
+        # Load THIS working tree as the pi package under test, and nothing else:
+        # personal packages (memory, MCP adapters, ...) would make runs irreproducible.
+        settings["packages"] = [str(ROOT)]
+    settings_file.write_text(json.dumps(settings, indent=2))
     env = dict(os.environ)
     env["PI_CODING_AGENT_DIR"] = str(pi_home)
+    env["ZEN_TRACE_DIR"] = str(cdir / "traces")
+    return env
+
+
+def assertion_env(case: dict, adir: Path) -> dict:
+    env = dict(os.environ)
+    env["ZEN_EVAL_FIXTURES"] = str(FIXTURES / case["id"])
+    env["ZEN_EVAL_LIB"] = str(FIXTURES / "lib")
+    env["ZEN_EVAL_ROOT"] = str(ROOT)
+    env["ZEN_EVAL_TRACE_DIR"] = str(adir / "traces")
     return env
 
 
@@ -96,7 +129,7 @@ def run_agent(prompt: str, cwd: Path, timeout_s: int, agent_args: list[str], log
     return {"exit": exit_code, "timed_out": timed_out, "duration_s": round(time.monotonic() - start, 1)}
 
 
-def run_attempt(case: dict, adir: Path, agent_args: list[str], clean: bool) -> dict:
+def run_attempt(case: dict, adir: Path, agent_args: list[str], clean: bool, installed: bool) -> dict:
     workdir = adir / "repo"
     adir.mkdir(parents=True, exist_ok=True)
     result: dict = {"id": case["id"], "repo": case["repo"], "base_commit": case["base_commit"],
@@ -108,11 +141,12 @@ def run_attempt(case: dict, adir: Path, agent_args: list[str], clean: bool) -> d
         return result
 
     result["agent"] = run_agent(case["prompt"], workdir, case.get("timeout_s", 600), agent_args,
-                                adir / "agent.jsonl", isolated_pi_env(adir))
+                                adir / "agent.jsonl", isolated_pi_env(adir, installed))
 
     checks = []
+    env = assertion_env(case, adir)
     for a in case["assertions"]:
-        r = subprocess.run(["bash", "-c", a["cmd"]], cwd=workdir, capture_output=True, text=True)
+        r = subprocess.run(["bash", "-c", a["cmd"]], cwd=workdir, capture_output=True, text=True, env=env)
         checks.append({**a, "exit": r.returncode, "pass": r.returncode == 0,
                        "output": (r.stdout + r.stderr).strip()[-500:]})
     result["assertions"] = checks
@@ -165,7 +199,7 @@ def summarize(case: dict, attempts: list[dict]) -> dict:
     return summary
 
 
-def run_case(case: dict, itdir: Path, agent_args: list[str], clean: bool, runs: int) -> dict:
+def run_case(case: dict, itdir: Path, agent_args: list[str], clean: bool, runs: int, installed: bool) -> dict:
     cdir = itdir / case["id"]
     cdir.mkdir(parents=True, exist_ok=True)
     attempts = []
@@ -173,7 +207,7 @@ def run_case(case: dict, itdir: Path, agent_args: list[str], clean: bool, runs: 
         if runs > 1:
             print(f"   attempt {k}/{runs} ...", flush=True)
         adir = cdir / "attempts" / f"attempt-{k}"
-        a = run_attempt(case, adir, agent_args, clean)
+        a = run_attempt(case, adir, agent_args, clean, installed)
         (adir / "result.json").write_text(json.dumps(a, indent=2))
         attempts.append(a)
     return summarize(case, attempts)
@@ -210,6 +244,8 @@ def main() -> int:
     ap.add_argument("--runs", type=int, default=1,
                     help="attempts per case (default 1); use >=3 for variance estimates")
     ap.add_argument("--clean", action="store_true", help="delete checkouts after each case")
+    ap.add_argument("--installed", action="store_true",
+                    help="use the packages from your settings.json instead of this working tree")
     args = ap.parse_args()
     if args.runs < 1:
         sys.exit("--runs must be >= 1")
@@ -240,6 +276,8 @@ def main() -> int:
         "provider": provider,
         "model_source": model_source,
         "pi_version": pi_version(),
+        "zen_package": "installed" if args.installed else str(ROOT),
+        "zen_revision": sh(["git", "-C", str(ROOT), "rev-parse", "--short=12", "HEAD"]).stdout.strip() or None,
         "runs_per_case": args.runs,
         "recorded_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "cases": [c["id"] for c in cases],
@@ -248,7 +286,7 @@ def main() -> int:
     failed = 0
     for case in cases:
         print(f"== {case['id']} ... ({args.runs} run{'s' if args.runs > 1 else ''})", flush=True)
-        result = run_case(case, itdir, agent_args, args.clean, args.runs)
+        result = run_case(case, itdir, agent_args, args.clean, args.runs, args.installed)
         (itdir / case["id"] / "result.json").write_text(json.dumps(result, indent=2))
         ok = result.get("passed", False)
         failed += 0 if ok else 1
