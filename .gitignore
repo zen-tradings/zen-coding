@@ -7,3 +7,5 @@ evals/runs/
 __pycache__/
 .claude/
 credential.txt
+alpha_db.json
+batch_submit_results.json

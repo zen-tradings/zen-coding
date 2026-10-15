@@ -1,0 +1,66 @@
+{
+  "category_counts": {
+    "analyst": 1324,
+    "fundamental": 1652,
+    "model": 40,
+    "news": 996,
+    "option": 138,
+    "pv": 195,
+    "socialmedia": 22
+  },
+  "dataset_counts_top50": {
+    "analyst4": 1324,
+    "fundamental2": 766,
+    "fundamental6": 886,
+    "model16": 24,
+    "model51": 16,
+    "news12": 875,
+    "news18": 121,
+    "option8": 64,
+    "option9": 74,
+    "pv1": 24,
+    "pv13": 165,
+    "socialmedia12": 18,
+    "socialmedia8": 4,
+    "univ1": 6
+  },
+  "field_count": 4367,
+  "pages": 219,
+  "query": {
+    "delay": 1,
+    "instrumentType": "EQUITY",
+    "region": "USA",
+    "universe": "TOP3000"
+  },
+  "requested_limit": 20,
+  "sample_ids": [
+    "accrued_liabilities_total",
+    "accrued_liabilities_total_2",
+    "accumulated_amortization_customer_intangibles",
+    "accumulated_amortization_customer_intangibles_2",
+    "accumulated_amortization_finite_intangibles",
+    "accumulated_depreciation_depletion_amortization_ppne",
+    "accumulated_oci_net_of_tax_value",
+    "acquired_cash_equivalents_business_combination",
+    "acquired_finite_intangible_assets",
+    "acquired_finite_intangible_assets_total",
+    "acquired_goodwill_value",
+    "acquired_intangible_avg_useful_life",
+    "acquired_property_equipment_value",
+    "acquisition_assets_property_plant_equipment",
+    "acquisition_goodwill_amount",
+    "acquisition_identifiable_assets_recognized",
+    "acquisition_liabilities_assumed",
+    "acquisition_proforma_revenue",
+    "acquisition_related_costs_expense",
+    "acquisition_related_expenses"
+  ],
+  "total_hint": 4367,
+  "type_counts": {
+    "GROUP": 142,
+    "MATRIX": 2828,
+    "SYMBOL": 4,
+    "UNIVERSE": 6,
+    "VECTOR": 1387
+  }
+}

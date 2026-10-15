@@ -5,6 +5,19 @@
  * evidence fields (role, model, evidence_refs, as_of, error, recovery,
  * self_check). Every line carries schema_version 2; see TraceLine below.
  *
+ * Research sessions additionally carry a `research` context on every line
+ * (code revision, data snapshot id, random seed, universe definition) so a
+ * result can be reproduced. A session becomes a research session when a
+ * research command is typed (/alpha, /beta-audit, ...), a research skill is
+ * read, a write/edit targets research code (zen:research-file from the
+ * guardrails), or ZEN_RESEARCH_SESSION is set. Frontend/deploy sessions keep
+ * `research: null` — nothing is required of them. Values come from the
+ * environment (ZEN_DATA_SNAPSHOT, ZEN_RANDOM_SEED, ZEN_UNIVERSE) or from code
+ * written in the session (np.random.seed(42), universe = ..., snapshot="...");
+ * unknown values stay null, never guessed.
+ *
+ * Guardrail decisions (block and warn) are recorded as `guardrail` lines.
+ *
  * <traceDir> defaults to ~/.zen/traces (global, so traces don't scatter
  * .zen/ directories into every repo the agent touches); override with
  * ZEN_TRACE_DIR. The directory is created recursively if missing.
@@ -14,6 +27,7 @@
  * files (~/.pi/agent/sessions/).
  */
 import type { ExtensionAPI, ExtensionContext } from "@earendil-works/pi-coding-agent";
+import { execFileSync } from "node:child_process";
 import { appendFileSync, mkdirSync, statSync } from "node:fs";
 import { homedir } from "node:os";
 import { isAbsolute, join, relative, resolve } from "node:path";
@@ -50,6 +64,25 @@ export interface TraceSelfCheck {
   result: "pass" | "fail" | "uncertain";
 }
 
+export interface GuardrailFinding {
+  rule: string;
+  action: "block" | "warn";
+  message: string;
+  path: string;
+  line: number | null;
+}
+
+/** Reproducibility context, present on every line of a research session. */
+export interface ResearchContext {
+  /** Why the session counts as research: "command" | "skill" | "research-file" | "env". */
+  trigger: string;
+  /** git HEAD of the working directory (short sha, "-dirty" when uncommitted changes exist); null outside git. */
+  code_revision: string | null;
+  data_snapshot_id: string | null;
+  random_seed: number | string | null;
+  universe: string | null;
+}
+
 export type TraceEvent =
   | "session_start"
   | "agent_start"
@@ -60,6 +93,8 @@ export type TraceEvent =
   | "tool_call_end"
   | "assistant_usage"
   | "model_select"
+  | "guardrail"
+  | "research_session"
   | "session_shutdown";
 
 /** One line of <traceDir>/<sessionId>.jsonl. */
@@ -76,6 +111,8 @@ export interface TraceLine {
   error: TraceError | null;
   recovery: TraceRecovery | null;
   self_check: TraceSelfCheck | null;
+  /** null unless the session has been recognised as a research session. */
+  research: ResearchContext | null;
   // Event-specific telemetry (schema v1 fields, unchanged).
   cwd?: string;
   mode?: string;
@@ -88,6 +125,9 @@ export interface TraceLine {
   isError?: boolean;
   usage?: unknown;
   source?: string;
+  // guardrail lines
+  path?: string | null;
+  findings?: GuardrailFinding[];
 }
 
 type StepFields = Omit<TraceLine, "schema_version" | "ts" | "event">;
@@ -102,6 +142,48 @@ const CHECK_COMMAND =
 
 const MUTATING_FILE_TOOLS = new Set(["write", "edit"]);
 const PATH_TOOLS = new Set(["read", "write", "edit", "grep", "find", "ls"]);
+
+// Typed input that marks a session as research: the quant slash commands and research skills.
+const RESEARCH_COMMAND =
+  /^\s*\/(alpha|beta-audit|portfolio|backtest|paper-replicate|fundamental|audit)\b|^\s*\/skill:(beta-audit|alpha-research|backtest|paper-replication|wq-alpha-research)\b/;
+const RESEARCH_SKILL_FILE = /[\\/]skills[\\/](beta-audit|alpha-research|backtest|paper-replication|wq-alpha-research)[\\/]SKILL\.md$/;
+// Bash commands after which HEAD or the dirty flag may have changed.
+const GIT_MUTATING = /\bgit\s+(commit|checkout|switch|merge|rebase|pull|reset|stash|cherry-pick|revert|am|apply|restore)\b/;
+
+/** Random seed set in code: np.random.seed(42), random_state=42, torch.manual_seed(7), seed=123. */
+export function detectSeed(text: string): number | string | null {
+  const call = /\b(?:np\.random\.seed|numpy\.random\.seed|random\.seed|torch\.manual_seed|tf\.random\.set_seed|set_seed|seed_everything|default_rng)\(\s*(\d+)\s*\)/.exec(text);
+  if (call) return Number(call[1]);
+  const kw = /\b(?:random_state|seed|random_seed)\s*=\s*(\d+)\b/.exec(text);
+  return kw ? Number(kw[1]) : null;
+}
+
+/** Data snapshot / as-of version named in code: snapshot="2026-09-30", data_version = "v3", as_of="2026-01-01". */
+export function detectSnapshot(text: string): string | null {
+  const m = /\b(?:data_snapshot|snapshot_id|snapshot|data_version|dataset_version|as_of|asof)\s*[=:]\s*["']([^"'\n]{1,80})["']/.exec(text);
+  return m ? m[1] : null;
+}
+
+/** Universe definition in code or config: universe = [...], UNIVERSE = "TOP3000", universe: SMH, XLE, XLI. */
+export function detectUniverse(text: string): string | null {
+  const m = /^[ \t]*(?:[A-Za-z_][\w.]*\.)?(?:universe|UNIVERSE|Universe)\s*[=:]\s*(.+)$/m.exec(text);
+  if (!m) return null;
+  const value = m[1].trim().replace(/\s*#.*$/, "").trim();
+  return value ? clip(value, 160) : null;
+}
+
+/** Short HEAD sha of cwd with a -dirty suffix when tracked files have uncommitted changes. */
+export function gitRevision(cwd: string): string | null {
+  const git = (...args: string[]) =>
+    execFileSync("git", ["-C", cwd, ...args], { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"], timeout: 3000 }).trim();
+  try {
+    const sha = git("rev-parse", "--short=12", "HEAD");
+    const dirty = git("status", "--porcelain", "--untracked-files=no") !== "";
+    return dirty ? `${sha}-dirty` : sha;
+  } catch {
+    return null;
+  }
+}
 
 function compact(value: unknown): unknown {
   const text = JSON.stringify(value);
@@ -174,9 +256,71 @@ export default function (pi: ExtensionAPI) {
   const toolCalls = new Map<string, { args: unknown; role: StepRole; refs: EvidenceRef[] }>();
   // Unresolved tool failure chain, used to infer recovery on later steps.
   let pendingFailure: { toolName: string; attempts: number } | null = null;
+  // Research context: null until the session is recognised as research.
+  let research: ResearchContext | null = null;
+  // write/edit calls the guardrails flagged as research code (zen:research-file), scanned for seed/snapshot/universe.
+  const researchFileCalls = new Map<string, string>();
+  // Most recent extension context, for event-bus handlers that receive none.
+  let lastCtx: ExtensionContext | undefined;
 
   pi.events.on("zen:mode", (mode) => {
     if (typeof mode === "string") zenMode = mode;
+  });
+
+  const activateResearch = (trigger: string, ctx: ExtensionContext | undefined) => {
+    if (research) return;
+    const env = process.env;
+    research = {
+      trigger,
+      code_revision: ctx ? gitRevision(ctx.cwd) : null,
+      data_snapshot_id: env.ZEN_DATA_SNAPSHOT || null,
+      random_seed: env.ZEN_RANDOM_SEED ? (Number.isNaN(Number(env.ZEN_RANDOM_SEED)) ? env.ZEN_RANDOM_SEED : Number(env.ZEN_RANDOM_SEED)) : null,
+      universe: env.ZEN_UNIVERSE || null,
+    };
+    emit("research_session", ctx, { source: trigger });
+  };
+
+  const refreshRevision = (ctx: ExtensionContext | undefined) => {
+    if (research && ctx) research = { ...research, code_revision: gitRevision(ctx.cwd) };
+  };
+
+  /** Pull reproducibility values out of research code written in this session; env values win. */
+  const scanResearchContent = (text: string) => {
+    if (!research) return;
+    const env = process.env;
+    const seed = env.ZEN_RANDOM_SEED ? null : detectSeed(text);
+    const snapshot = env.ZEN_DATA_SNAPSHOT ? null : detectSnapshot(text);
+    const universe = env.ZEN_UNIVERSE ? null : detectUniverse(text);
+    if (seed !== null || snapshot !== null || universe !== null) {
+      research = {
+        ...research,
+        random_seed: seed ?? research.random_seed,
+        data_snapshot_id: snapshot ?? research.data_snapshot_id,
+        universe: universe ?? research.universe,
+      };
+    }
+  };
+
+  pi.events.on("zen:research-file", (data) => {
+    const d = data as { toolCallId?: string; path?: string } | undefined;
+    if (!d?.toolCallId) return;
+    researchFileCalls.set(d.toolCallId, d.path ?? "");
+    activateResearch("research-file", lastCtx);
+  });
+
+  pi.events.on("zen:guardrail", (data) => {
+    const d = data as { toolCallId?: string; toolName?: string; path?: string | null; findings?: GuardrailFinding[] } | undefined;
+    if (!d?.toolCallId) return;
+    const findings = d.findings ?? [];
+    const blocked = findings.find((f) => f.action === "block");
+    emit("guardrail", lastCtx, {
+      toolCallId: d.toolCallId,
+      toolName: d.toolName,
+      path: d.path ?? null,
+      findings,
+      role: d.toolName ? toolRole(d.toolName, undefined) : undefined,
+      error: blocked ? { type: "blocked", message: clip(blocked.message), tool_call_id: d.toolCallId } : null,
+    });
   });
 
   const baseRole = (): StepRole => (zenMode === "plan" ? "plan" : "other");
@@ -229,13 +373,13 @@ export default function (pi: ExtensionAPI) {
         refs.push(fileRef(cwd, baseIsDir ? join(base, m[1]) : base, { start: n, end: n }));
         if (refs.length >= MAX_REFS) break;
       }
-    } else if (toolName === "exa_search") {
-      // exa_search output: "   <url>" optionally followed by "   published: <date>".
+    } else if (toolName.startsWith("mcp__exa__")) {
+      // Exa MCP output: "URL: <url>" optionally followed by "Published: <date|N/A>".
       const lines = text.split("\n");
       for (let i = 0; i < lines.length && refs.length < MAX_REFS; i++) {
-        const url = /^ {3}(https?:\/\/\S+)$/.exec(lines[i])?.[1];
+        const url = /^URL: (https?:\/\/\S+)$/.exec(lines[i])?.[1];
         if (!url) continue;
-        const published = /^ {3}published: (.+)$/.exec(lines[i + 1] ?? "")?.[1];
+        const published = /^Published: (?!N\/A)(.+)$/.exec(lines[i + 1] ?? "")?.[1];
         const date = published ? new Date(published) : null;
         refs.push({
           kind: "url",
@@ -261,6 +405,7 @@ export default function (pi: ExtensionAPI) {
   };
 
   const emit = (event: TraceEvent, ctx: ExtensionContext | undefined, data: Partial<StepFields> = {}) => {
+    if (ctx) lastCtx = ctx;
     if (!tracePath) return;
     const refs = data.evidence_refs ?? [];
     const line: TraceLine = {
@@ -272,6 +417,7 @@ export default function (pi: ExtensionAPI) {
       error: null,
       recovery: null,
       self_check: null,
+      research,
       ...data,
       evidence_refs: refs,
       as_of: data.as_of !== undefined ? data.as_of : earliestAsOf(refs),
@@ -292,12 +438,20 @@ export default function (pi: ExtensionAPI) {
       tracePath = null;
       return;
     }
+    research = null;
+    researchFileCalls.clear();
     emit("session_start", ctx, { cwd: ctx.cwd, mode: ctx.mode, zen_mode: zenMode });
+    if (process.env.ZEN_RESEARCH_SESSION && process.env.ZEN_RESEARCH_SESSION !== "0") activateResearch("env", ctx);
+  });
+
+  pi.on("input", async (event, ctx) => {
+    if (RESEARCH_COMMAND.test(event.text)) activateResearch("command", ctx);
   });
 
   pi.on("agent_start", async (_event, ctx) => {
     agentStartedAt = Date.now();
     pendingFailure = null;
+    refreshRevision(ctx);
     emit("agent_start", ctx, { zen_mode: zenMode });
   });
 
@@ -306,6 +460,7 @@ export default function (pi: ExtensionAPI) {
       ? { action: "gave_up", attempts: pendingFailure.attempts }
       : null;
     pendingFailure = null;
+    refreshRevision(ctx);
     emit("agent_end", ctx, { durationMs: Date.now() - agentStartedAt, recovery });
   });
 
@@ -328,6 +483,20 @@ export default function (pi: ExtensionAPI) {
     toolStartedAt.set(event.toolCallId, Date.now());
     const role = toolRole(event.toolName, event.args);
     const refs = inputRefs(event.toolName, event.args, ctx.cwd);
+    const args = (event.args ?? {}) as { path?: unknown; content?: unknown; edits?: unknown };
+    if (event.toolName === "read" && typeof args.path === "string" && RESEARCH_SKILL_FILE.test(args.path)) {
+      activateResearch("skill", ctx);
+    }
+    if (researchFileCalls.has(event.toolCallId)) {
+      researchFileCalls.delete(event.toolCallId);
+      const written =
+        typeof args.content === "string"
+          ? args.content
+          : Array.isArray(args.edits)
+            ? (args.edits as Array<{ newText?: unknown }>).map((e) => (typeof e.newText === "string" ? e.newText : "")).join("\n")
+            : "";
+      scanResearchContent(written);
+    }
     toolCalls.set(event.toolCallId, { args: event.args, role, refs });
     const recovery: TraceRecovery | null = pendingFailure
       ? {
@@ -364,6 +533,7 @@ export default function (pi: ExtensionAPI) {
 
     let selfCheck: TraceSelfCheck | null = null;
     const command = (call?.args as { command?: unknown } | undefined)?.command;
+    if (research && event.toolName === "bash" && typeof command === "string" && GIT_MUTATING.test(command)) refreshRevision(ctx);
     if (role === "check" && typeof command === "string") {
       selfCheck = {
         what_was_checked: clip(command.split("\n")[0], 200),
@@ -421,5 +591,7 @@ export default function (pi: ExtensionAPI) {
   pi.on("session_shutdown", async (_event, ctx) => {
     emit("session_shutdown", ctx);
     tracePath = null;
+    research = null;
+    researchFileCalls.clear();
   });
 }

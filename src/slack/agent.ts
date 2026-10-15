@@ -1,7 +1,7 @@
 /**
  * pi session factory for Slack threads.
  *
- * Security note: extensions (guardrails, observability, modes, zen-tools) are
+ * Security note: extensions (guardrails, observability, modes) are
  * ALWAYS discovered from the zen-coding repo root — never from the checked-out
  * repo — so a cloned repo's .pi/extensions/ can never execute code in this
  * service. Context files (AGENTS.md / CLAUDE.md) from the checkout are plain
