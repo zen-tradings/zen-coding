@@ -1,6 +1,6 @@
 {
-  "defaultProvider": "fireworks",
-  "defaultModel": "accounts/fireworks/models/kimi-k3",
+  "defaultProvider": "digitalocean",
+  "defaultModel": "glm-5.3-flash",
   "packages": [
     "npm:@braintrust/pi-extension"
   ]
