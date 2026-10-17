@@ -13,8 +13,9 @@ Requires Node >= 22.
 ```bash
 npm install
 
-# At least one model provider key (see Models below), e.g.:
-export DEEPSEEK_API_KEY=...        # or ANTHROPIC_API_KEY, GROQ_API_KEY, OPENROUTER_API_KEY, ...
+# Model provider keys — DigitalOcean GenAI is the default provider of this repo:
+export ZEN_DIGITALOCEAN_API_KEY=...      # DO GenAI Model Access Key
+# or any other provider key (see Models below): ANTHROPIC_API_KEY, DEEPSEEK_API_KEY, GROQ_API_KEY, OPENROUTER_API_KEY, ...
 export EXA_API_KEY=...             # optional, enables the exa_search tool
 
 # Optional: Braintrust tracing of interactive sessions (off by default)
@@ -40,6 +41,13 @@ npx pi --mode rpc                     # JSON protocol over stdin/stdout
 
 Open-source models are first-class. Two ways to use them:
 
+- **DigitalOcean GenAI** (default provider): export `ZEN_DIGITALOCEAN_API_KEY`
+  (Model Access Key) and models are auto-discovered from
+  `ZEN_DIGITALOCEAN_BASE_URL` (default `https://inference.do-ai.run/v1`); optional
+  `ZEN_DIGITALOCEAN_MODELS` overrides the discovered list, and
+  `ZEN_DIGITALOCEAN_REASONING_MODELS` enables DeepSeek-style thinking per model —
+  Non-chat models (embeddings/rerankers/image/audio/video) are filtered out
+  automatically, see `.pi/extensions/zen-models-do.ts`.
 - **Hosted**: export the provider key and select with `/model` — DeepSeek
   (`DEEPSEEK_API_KEY`), Groq (`GROQ_API_KEY`), Fireworks, Together, OpenRouter
   (`OPENROUTER_API_KEY`), Hugging Face (`HF_TOKEN`), Kimi, Qwen, ZAI/GLM, MiniMax, …
@@ -62,6 +70,7 @@ Slack-backend (SDK) sessions are traced by `src/slack/tracing.ts` under the same
 The local JSONL traces remain the source of truth for the eval harness; Braintrust is the dashboard.
 | `modes.ts` | `/zen normal\|clarify\|plan` — clarify asks follow-up questions first; plan is read-only. |
 | `zen-models.ts` | Registers self-hosted open-source model endpoints from `ZEN_LOCAL_*` env vars. |
+| `zen-models-do.ts` | Registers the DigitalOcean GenAI provider (`digitalocean`) from `ZEN_DIGITALOCEAN_*` env vars — the default provider when configured. |
 | `zen-tools/` | `exa_search` (web/code/paper search). GitHub goes through `gh` + bash for now; proprietary data connectors land here. |
 
 Extensions are TypeScript, loaded by pi without a build step. `npm run typecheck` checks them.
