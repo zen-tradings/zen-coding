@@ -2,7 +2,6 @@
   "defaultProvider": "digitalocean",
   "defaultModel": "glm-5.3-flash",
   "packages": [
-    "npm:pi-mcp-adapter",
     "npm:@braintrust/pi-extension"
   ]
 }

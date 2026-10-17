@@ -1,0 +1,57 @@
+{
+  "$schema": "https://mintlify.com/docs.json",
+  "name": "Zen Trading Docs",
+  "theme": "mint",
+  "colors": {
+    "primary": "#4F7FD9",
+    "light": "#8FB3FF",
+    "dark": "#0E1932"
+  },
+  "appearance": {
+    "default": "dark",
+    "strict": true
+  },
+  "background": {
+    "color": {
+      "light": "#F8FAFC",
+      "dark": "#0E1932"
+    }
+  },
+  "logo": {
+    "light": "/zen-trading-wordmark-dark.svg",
+    "dark": "/zen-trading-wordmark.svg"
+  },
+  "navbar": {
+    "links": [
+      {
+        "label": "GitHub",
+        "href": "https://github.com/zen-tradings"
+      }
+    ]
+  },
+  "navigation": {
+    "groups": [
+      {
+        "group": "Overview",
+        "pages": ["index"]
+      },
+      {
+        "group": "Coding Agent",
+        "pages": ["install-anywhere", "mcp-connectors", "slack", "evals"]
+      },
+      {
+        "group": "Fundamental Agent",
+        "pages": ["fundamental-agent"]
+      },
+      {
+        "group": "Benchmarking",
+        "pages": ["benchmarking"]
+      }
+    ]
+  },
+  "footer": {
+    "socials": {
+      "github": "https://github.com/zen-tradings"
+    }
+  }
+}

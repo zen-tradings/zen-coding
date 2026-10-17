@@ -6,9 +6,20 @@
  * repo — so a cloned repo's .pi/extensions/ can never execute code in this
  * service. Context files (AGENTS.md / CLAUDE.md) from the checkout are plain
  * content and are injected as virtual context instead.
+ *
+ * MCP: SDK sessions do not load pi's built-in extensions, so the MCP, codemode,
+ * and tool-search extensions are added explicitly. The built-in MCP loader
+ * would read <session cwd>/.pi/mcp.json — the checkout — so its file loading is
+ * disabled and the servers from zen-coding's own .pi/mcp.json are registered
+ * instead. A cloned repo can therefore never add or redirect MCP servers.
  */
 import * as pi from "@earendil-works/pi-coding-agent";
-import type { AgentSession, ModelRuntime } from "@earendil-works/pi-coding-agent";
+import type {
+  AgentSession,
+  ExtensionAPI,
+  McpServerConfig,
+  ModelRuntime,
+} from "@earendil-works/pi-coding-agent";
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { maybeWrapPiForTracing } from "./tracing.js";
@@ -50,9 +61,27 @@ function loadCheckoutContext(cwd: string, zenRoot: string): Array<{ path: string
   return files;
 }
 
+/** Servers from zen-coding's .pi/mcp.json; pi validates each on registration. */
+function loadZenMcpServers(zenRoot: string): Array<[string, McpServerConfig]> {
+  const path = join(zenRoot, ".pi", "mcp.json");
+  if (!existsSync(path)) return [];
+  try {
+    const parsed = JSON.parse(readFileSync(path, "utf8")) as {
+      mcpServers?: Record<string, McpServerConfig>;
+    };
+    return Object.entries(parsed.mcpServers ?? {});
+  } catch (err) {
+    console.warn(`[zen-slack] ignoring unreadable ${path}: ${(err as Error).message}`);
+    return [];
+  }
+}
+
 export async function createThreadSession(opts: ThreadSessionOptions): Promise<AgentSession> {
   const {
     createAgentSession,
+    createCodemodeExtension,
+    createMcpExtension,
+    createToolSearchExtension,
     DefaultResourceLoader,
     getAgentDir,
     resolveCliModel,
@@ -60,10 +89,21 @@ export async function createThreadSession(opts: ThreadSessionOptions): Promise<A
   } = await maybeWrapPiForTracing(pi);
 
   const checkoutContext = loadCheckoutContext(opts.cwd, opts.zenRoot);
+  const mcpServers = loadZenMcpServers(opts.zenRoot);
+  const registerZenMcpServers = (api: ExtensionAPI) => {
+    for (const [name, config] of mcpServers) api.registerMcpServer(name, config);
+  };
 
   const loader = new DefaultResourceLoader({
     cwd: opts.zenRoot,
     agentDir: getAgentDir(),
+    extensionFactories: [
+      createCodemodeExtension(),
+      createToolSearchExtension(),
+      // No file loading: never read the checkout's (or the host's) mcp.json.
+      createMcpExtension({ loadConfig: () => ({ servers: [], errors: [] }) }),
+      registerZenMcpServers,
+    ],
     agentsFilesOverride: (current) => ({
       agentsFiles: [
         ...current.agentsFiles,
@@ -96,5 +136,7 @@ export async function createThreadSession(opts: ThreadSessionOptions): Promise<A
         ? SessionManager.open(opts.sessionFile)
         : SessionManager.create(opts.cwd),
   });
+  // Emits session_start: extensions initialise and MCP servers connect in the background.
+  await session.bindExtensions({});
   return session;
 }

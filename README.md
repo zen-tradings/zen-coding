@@ -1,234 +1,260 @@
 # zen-coding
 
-Quant coding agent built on [pi](https://github.com/earendil-works/pi) (`@earendil-works/pi-coding-agent`).
+**A coding agent for quantitative research and development.**
 
-pi is a **pinned npm dependency, not vendored**: the harness (agent loop, TUI, sessions,
-providers) comes from the package; everything zen-specific lives in `.pi/extensions/` and
-is auto-discovered whenever pi runs inside this repo.
+zen-coding is a terminal and Slack coding agent with quant workflows built in — alpha
+research, beta audits, portfolio construction, backtest review, paper replication — and
+guardrails against the mistakes that quietly ruin research code.
+
+It is a layer on top of [pi](https://github.com/earendil-works/pi), an open-source
+coding-agent harness: pi provides the agent loop, terminal UI, sessions, and model
+providers; zen-coding adds extensions, prompt templates, skills, and MCP configuration
+that pi discovers when you run it in this repository. The command you run is `pi`.
 
 ## Quick start
 
-Requires Node >= 22.
+Requires **Node.js ≥ 22**.
 
 ```bash
-npm install
+# 1. Install pi (once)
+npm install -g --ignore-scripts @earendil-works/pi-coding-agent   # or: curl -fsSL https://pi.dev/install.sh | sh
 
-# Model provider keys — DigitalOcean GenAI is the default provider of this repo:
-export ZEN_DIGITALOCEAN_API_KEY=...      # DO GenAI Model Access Key
-# or any other provider key (see Models below): ANTHROPIC_API_KEY, DEEPSEEK_API_KEY, GROQ_API_KEY, OPENROUTER_API_KEY, ...
-export EXA_API_KEY=...             # optional, enables the exa_search tool
+# 2. Get zen-coding
+git clone https://github.com/zen-tradings/zen-coding.git
+cd zen-coding
+git submodule update --init   # optional: wq-alpha-research skill
+npm install                   # extension dependencies
 
-# Optional: Braintrust tracing of interactive sessions (off by default)
-export TRACE_TO_BRAINTRUST=true
-export BRAINTRUST_API_KEY=...
-export BRAINTRUST_PROJECT=zen-coding
+# 3. Set a provider key (default model is glm-5.3-flash on DigitalOcean GenAI; Fireworks, Anthropic and OpenAI also supported — switch with /model)
+export ZEN_DIGITALOCEAN_API_KEY=...        # DO GenAI Model Access Key
+#export FIREWORKS_API_KEY=...              # alternative low-cost provider (Kimi K3)
 
-npm run agent                      # launches the pi TUI with zen extensions loaded
+# 4. Run pi inside the repository
+pi
 ```
 
-On first launch pi asks you to trust this project (project-local extensions run arbitrary
-code). Pick a model with `/model`, switch behavior with `/zen <mode>`.
+On first launch pi asks you to trust the project — project-local extensions are code.
+Trust it and zen-coding loads. `npm run agent` does the same with the pi version pinned
+in `package.json`, if you prefer not to install pi globally.
 
-Headless runs (used later by the eval harness and Slack backend):
+```
+/model                          pick a model
+/zen clarify                    ask clarifying questions before acting
+/alpha short-term reversal in small caps, conditioned on volume
+```
+## Features
+
+- **Quant workflows as slash commands** — `/alpha`, `/beta-audit`, `/portfolio`,
+  `/fundamental`, `/paper-replicate`, `/audit`, `/backtest`, each a rigorous
+  step-by-step procedure rather than a one-line prompt.
+- **Guardrails at the tool boundary** — destructive shell commands blocked, secrets and
+  protected paths unwritable, rules that repositories can only tighten.
+- **Cross-model comparison** — Anthropic, OpenAI, and Fireworks (low-cost); switch
+  with `/model` and compare on identical eval tasks.
+- **Research connectors and skills** — alphaXiv, multi-source paper search, GitHub,
+  Docker MCP Toolkit, Render, Mintlify via MCP; WorldQuant BRAIN alpha research as a skill.
+- **Slack bot** — @-mention with a GitHub link; the agent clones the repo and streams
+  its reply into the thread.
+- **Observability and evals** — JSONL traces of latency, tokens, and cost per session;
+  optional Braintrust; a reproducible eval harness for scoring models on identical tasks.
+
+
+## Usage
+
+### Interactive
+
+**Modes** — `/zen <mode>`:
+
+| Mode | Behaviour |
+|---|---|
+| `normal` | Default. Plan and implement. |
+| `clarify` | Ask concise clarifying questions first when the request is ambiguous. |
+| `plan` | Read-only. Explore, produce a step-by-step plan, stop. Edits are blocked. |
+
+**Quant commands** — prompt templates in `.pi/prompts/`:
+
+| Command | What it does |
+|---|---|
+| `/alpha <hypothesis>` | Alpha/factor research from hypothesis to IC, decay, turnover, and correlation with existing factors |
+| `/beta-audit <strategy>` | Decompose returns into factor exposures and verify hedging claims |
+| `/portfolio <objective>` | Build or review an allocation given signals, constraints, and a risk model |
+| `/fundamental <ticker>` | Filings-based fundamental analysis with every claim traceable to a source |
+| `/paper-replicate <paper>` | Extract a paper's methodology, implement it, verify against reported numbers |
+| `/audit <target>` | Adversarial audit — try to falsify a strategy, backtest, or finding |
+| `/backtest <path>` | Review a backtest for methodological soundness, then interpret results |
+| `/eval [case-id ...]` | Run the eval suite and report the verdict |
+
+**Skills** load automatically when a task matches, or on demand with `/skill:<name>`.
+
+### Headless
 
 ```bash
-npx pi -p "explain src/foo.py"        # one-shot, prints result
-npx pi --mode json -p "..."           # streamed JSON events
-npx pi --mode rpc                     # JSON protocol over stdin/stdout
+pi -p "explain src/foo.py"            # one-shot
+pi --mode json -p "..."               # streamed JSON events
+pi --mode rpc                         # JSON protocol over stdin/stdout
 ```
+
+Non-interactive modes skip the trust prompt: trust the project once interactively or
+pass `-a` / `--approve`, otherwise the zen extensions do not load.
+
+### In any repository
+
+zen-coding is also a [pi package](https://github.com/earendil-works/pi/blob/main/packages/coding-agent/docs/packages.md):
+
+```bash
+pi install git:github.com/zen-tradings/zen-coding
+```
+
+Guardrails, traces, `/zen` modes, and `exa_search` then load in every
+project. The quant commands, skills, and connectors are project resources — run `pi`
+inside this repository to use them. See [docs/install-anywhere.md](docs/install-anywhere.md).
 
 ## Models
 
-Open-source models are first-class. Two ways to use them:
+Supported providers are **Anthropic**, **OpenAI**, and two low-cost providers,
+**DigitalOcean GenAI** (the project default when configured) and **Fireworks**
+(Kimi K3), used for cross-model comparison. Export the provider key
+(`ZEN_DIGITALOCEAN_API_KEY`, `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `FIREWORKS_API_KEY`)
+and select a model with `/model`.
 
-- **DigitalOcean GenAI** (default provider): export `ZEN_DIGITALOCEAN_API_KEY`
-  (Model Access Key) and models are auto-discovered from
-  `ZEN_DIGITALOCEAN_BASE_URL` (default `https://inference.do-ai.run/v1`); optional
-  `ZEN_DIGITALOCEAN_MODELS` overrides the discovered list, and
-  `ZEN_DIGITALOCEAN_REASONING_MODELS` enables DeepSeek-style thinking per model —
-  Non-chat models (embeddings/rerankers/image/audio/video) are filtered out
-  automatically, see `.pi/extensions/zen-models-do.ts`.
-- **Hosted**: export the provider key and select with `/model` — DeepSeek
-  (`DEEPSEEK_API_KEY`), Groq (`GROQ_API_KEY`), Fireworks, Together, OpenRouter
-  (`OPENROUTER_API_KEY`), Hugging Face (`HF_TOKEN`), Kimi, Qwen, ZAI/GLM, MiniMax, …
-- **Self-hosted** (vLLM / SGLang / Ollama / LM Studio / llama.cpp): set
-  `ZEN_LOCAL_BASE_URL` and `ZEN_LOCAL_MODELS` — see `.pi/extensions/zen-models.ts`.
+**DigitalOcean GenAI** (the project default when configured): export
+`ZEN_DIGITALOCEAN_API_KEY` (Model Access Key) and models are auto-discovered from
+`ZEN_DIGITALOCEAN_BASE_URL` (default `https://inference.do-ai.run/v1`); optional
+`ZEN_DIGITALOCEAN_MODELS` and `ZEN_DIGITALOCEAN_REASONING_MODELS` override the discovered
+list and DeepSeek-style thinking per model — non-chat models
+(embeddings/rerankers/image/audio/video) are filtered out automatically. See
+`.pi/extensions/zen-models-do.ts`.
 
-Closed models (Anthropic/OpenAI/Google) work the same way, which makes cross-model
-benchmarking (cost/latency per task, see design.md) a matter of swapping `/model`.
+The project default lives in `.pi/settings.json` (`defaultProvider` / `defaultModel`).
+Comparing models on cost, latency, and pass rate is a matter of re-running the
+[eval harness](docs/evals.md) with `--model`.
 
-## What's in `.pi/extensions/`
+## Slack bot
 
-| Extension | Purpose |
-|---|---|
-| `guardrails.ts` | Blocks denied bash patterns and writes to protected paths before any tool executes. Rules in `.pi/guardrails.json`. |
-| `observability.ts` | JSONL telemetry per session → `~/.zen/traces/<sessionId>.jsonl` (override: `ZEN_TRACE_DIR`): turn/tool latency, token usage, cost, model switches. Full transcripts live in pi's session files. |
+@-mention the bot in a channel — optionally with a GitHub link — or DM it. It works in a
+backend session and streams its reply into the thread; follow-up messages steer the
+running task, and `/zen` modes work from Slack.
 
-Optional hosted tracing: `@braintrust/pi-extension` (in `.pi/settings.json` packages) streams
-interactive sessions to Braintrust when `TRACE_TO_BRAINTRUST=true` + `BRAINTRUST_API_KEY` are set.
-Slack-backend (SDK) sessions are traced by `src/slack/tracing.ts` under the same env vars.
-The local JSONL traces remain the source of truth for the eval harness; Braintrust is the dashboard.
-| `modes.ts` | `/zen normal\|clarify\|plan` — clarify asks follow-up questions first; plan is read-only. |
-| `zen-models.ts` | Registers self-hosted open-source model endpoints from `ZEN_LOCAL_*` env vars. |
-| `zen-models-do.ts` | Registers the DigitalOcean GenAI provider (`digitalocean`) from `ZEN_DIGITALOCEAN_*` env vars — the default provider when configured. |
-| `zen-tools/` | `exa_search` (web/code/paper search). GitHub goes through `gh` + bash for now; proprietary data connectors land here. |
+Create the app at <https://api.slack.com/apps> → *Create New App* → *From a manifest*:
 
-Extensions are TypeScript, loaded by pi without a build step. `npm run typecheck` checks them.
-
-## Install globally
-
-This repo is also a pi package (`pi` manifest in `package.json`), so the zen layer —
-guardrails, observability, `/zen` modes, zen-models, zen-tools — can be installed once
-and loaded when running `pi` inside **any** repo:
+1. Paste [`slack-app-manifest.yaml`](slack-app-manifest.yaml) (scopes, events, and
+   Socket Mode pre-configured).
+2. *Basic Information → App-Level Tokens*: generate a token with `connections:write` →
+   `SLACK_APP_TOKEN` (`xapp-…`).
+3. *Install App → Install to Workspace*: copy the Bot User OAuth Token →
+   `SLACK_BOT_TOKEN` (`xoxb-…`).
+4. Invite the bot to a channel (`/invite @zen-coding`).
 
 ```bash
-pi install git:github.com/zen-tradings/zen-coding  # or: pi install /path/to/zen-coding
-```
-
-pi clones the repo, runs `npm install` (third-party runtime deps like `minimatch`;
-the pi runtime packages are `peerDependencies` since pi bundles them for extensions),
-and loads `.pi/extensions/` in every session.
-
-Global installs resolve their state outside the cwd, so nothing is scattered into the
-repos you work in:
-
-| Env var | Default | Purpose |
-|---|---|---|
-| `ZEN_GUARDRAILS_CONFIG` | `.pi/guardrails.json` inside the installed package | Guardrail rules file. Missing/unreadable rules are a hard startup error — guardrails never run silently disabled. |
-| `ZEN_TRACE_DIR` | `~/.zen/traces` | JSONL telemetry output directory (created recursively). |
-
-Protected-path rules (`.env`, `*.key`, `*.pem`, `.pi/guardrails.json`, …) are matched
-relative to whatever project pi is running in, so they follow the agent into any repo;
-writes outside the current project root remain blocked. A repo can add its own rules via
-its own `.pi/guardrails.json` — these merge **tighten-only** (deny lists union,
-`allowWritesOutsideCwd` can only narrow to `false`), so a repo can add protections but
-never weaken the base rules.
-
-Note: when running in an arbitrary repo, that repo's own project-local
-`.pi/extensions/` will also execute once the project is trusted — so declining trust
-for unfamiliar codebases is the safe default.
-
-## Skills (`.pi/skills/`)
-
-Skills are on-demand capability packages ([Agent Skills standard](https://agentskills.io));
-pi puts their descriptions in the system prompt and the agent loads the full
-instructions only when a task matches (or force with `/skill:<name>`).
-
-| Skill | Purpose |
-|---|---|
-| `mintlify-docs` | Structure, write, build, and maintain internal documentation with [Mintlify](https://mintlify.com/docs) (docs.json + MDX). Includes reference sheets (navigation schema, frontmatter, components, CLI), a starter template for scaffolding new docs sites, and workflows for validation (`mint validate`, `mint broken-links`) and push-to-deploy. Pairs with the `mintlify-docs` MCP connector below for live reference lookup. |
-
-## Slack backend
-
-`src/slack/` implements design.md §User Interaction 1: @-mention the bot in a channel
-(optionally with a GitHub link) and the agent works in a backend session, streaming its
-reply into the thread via message edits. DMs work the same way without the mention.
-
-```bash
-export SLACK_BOT_TOKEN=xoxb-...   # bot token
-export SLACK_APP_TOKEN=xapp-...   # app-level token (Socket Mode)
+export SLACK_BOT_TOKEN=xoxb-... SLACK_APP_TOKEN=xapp-...
+export GITHUB_TOKEN=...            # optional: private repositories
 npm run slack
 ```
 
-Slack app setup (<https://api.slack.com/apps> → Create New App → **From a manifest**):
+Each thread gets its own persistent session and repository checkout; a cloned
+repository's extensions never execute. Architecture and all options: [docs/slack.md](docs/slack.md).
 
-1. Pick your workspace and paste [`slack-app-manifest.yaml`](slack-app-manifest.yaml)
-   (scopes, events, and Socket Mode are pre-configured).
-2. **Basic Information → App-Level Tokens** → generate a token with
-   `connections:write` → this is `SLACK_APP_TOKEN` (`xapp-…`).
-3. **Install App → Install to Workspace** → copy the Bot User OAuth Token → this is
-   `SLACK_BOT_TOKEN` (`xoxb-…`).
-4. Invite the bot to a channel (`/invite @zen-coding`) and @-mention it, or DM it.
+## Research connectors
 
-For private channels, additionally add the `groups:history` scope and the
-`message.groups` event, then reinstall the app.
+External tools connect through pi's built-in MCP support. Their tools stay out of the
+model's tool list until needed: the agent finds and calls them from `codemode` scripts.
+A connector without credentials fails to connect and is reported once; the others keep
+working. Check them with `pi mcp list` or `/mcp`.
 
-How it maps to pi:
+| Connector | What it gives you | Requires |
+|---|---|---|
+| **alphaXiv** | Paper discovery, full-text Q&A, AI-digested reports, library management | `ALPHAXIV_API_KEY` |
+| **paper-search** | Search/download across 24+ sources — arXiv, SSRN, Semantic Scholar, PubMed, OpenAlex, … | [uv](https://docs.astral.sh/uv/) |
+| **GitHub** | Issues, pull requests, code search, notifications (official GitHub MCP server) | `gh auth login` |
+| **Docker MCP Toolkit** | Discover and run catalog MCP servers in isolated containers | Docker Desktop with `docker mcp` |
+| **Render** | Inspect and manage services deployed on Render | `RENDER_API_KEY` |
+| **Mintlify docs** | Live search over Mintlify's documentation | — |
 
-- **Thread ↔ session**: each Slack thread (or DM) gets its own pi `AgentSession`
-  (SDK `createAgentSession`), persisted so threads survive restarts and idle
-  eviction (mapping in `.zen/slack/threads.json`).
-- **Repo checkout per thread**: a GitHub link in the first message pins the thread to
-  a clone under `.zen/slack/workspaces/`; `GITHUB_TOKEN` enables private repos (token
-  is passed per git call, never written to disk). No link → `ZEN_SLACK_DEFAULT_CWD`.
-- **Streaming**: replies stream into one message via throttled `chat.update` edits,
-  with a tool-activity status line; long answers are chunked.
-- **Steering**: messages sent while the agent is running are delivered as steering
-  input to the ongoing run. `/zen plan|clarify|normal` works from Slack too.
-- **Isolation**: zen extensions/guardrails always load from *this* repo — a cloned
-  repo's `.pi/extensions/` is never executed. Guardrails block writes outside the
-  thread's checkout. `ZEN_SLACK_ALLOWED_USERS` (comma-separated user IDs) restricts
-  who can drive the bot.
+Details and how to add your own: [docs/mcp-connectors.md](docs/mcp-connectors.md).
 
-All knobs (model override, clone depth, idle eviction, …) are documented in
-`src/slack/config.ts`.
+## Skills
 
-## MCP connectors
+- [`wq-alpha-research`](https://github.com/zen-tradings/wq-alpha-research) — WorldQuant
+  BRAIN US-equity alpha research: expressions, field selection, simulation diagnostics,
+  Sharpe/fitness/turnover tuning, correlation management, submission. Git submodule;
+  credentials via `WQ_BRAIN_USERNAME` / `WQ_BRAIN_PASSWORD`.
+- `mintlify-docs` — write, build, validate, and deploy Mintlify documentation sites.
 
-MCP servers are bridged via [`pi-mcp-adapter`](https://github.com/nicobailon/pi-mcp-adapter),
-installed as a project package (`.pi/settings.json`; pi auto-installs it on first run
-after trust). Servers are configured in `.pi/mcp.json`:
+## Safety and guardrails
 
-- **alphaXiv** (`https://api.alphaxiv.org/mcp/v1`) — quant paper research:
-  `discover_papers`, `get_paper_content`, `answer_pdf_queries`, GitHub repo reading for
-  papers, and library folder management. Auth: create an API key at alphaxiv.org →
-  Settings → API Keys and `export ALPHAXIV_API_KEY=...`; in the TUI you can instead run
-  `/mcp-auth alphaxiv` for browser OAuth. Without credentials the connector logs a
-  warning and the session continues without it.
-- **paper-search** ([openags/paper-search-mcp](https://github.com/openags/paper-search-mcp),
-  local stdio server run via `uvx paper-search-mcp` — requires [uv](https://docs.astral.sh/uv/))
-  — multi-source paper search/download across 24+ platforms: arXiv, PubMed,
-  bioRxiv/medRxiv, Semantic Scholar, OpenAlex, Crossref, SSRN, Google Scholar, ….
-  Unified `search_papers` / `download_with_fallback` plus per-platform tools. Most
-  sources work without keys; optional keys (CORE, Semantic Scholar, Unpaywall email)
-  go in `~/.config/paper-search-mcp/.env`. Complements alphaXiv: alphaXiv gives
-  AI-digested reports and library management, paper-search gives raw multi-source
-  retrieval including SSRN.
-- **Mintlify docs** (`https://www.mintlify.com/docs/mcp`) — live search over the
-  official Mintlify documentation (docs.json schema, MDX components, CLI). Public,
-  no auth. Used by the `mintlify-docs` skill so docs work never relies on stale
-  knowledge of Mintlify's format.
-- **GitHub** (`https://api.githubcopilot.com/mcp/`, the official
-  [github-mcp-server](https://github.com/github/github-mcp-server)) — structured
-  issue/PR/repo tools: `create_issue`, `add_issue_comment`, `create_pull_request`,
-  searches, notifications, …. Auth reuses your `gh` CLI login (the adapter runs
-  `gh auth token` at connect time — no separate PAT needed). Note the agent acts as
-  whoever `gh` is logged in as, regardless of which Slack user drove the request. To
-  restrict capabilities, append `/readonly` to the URL or scope with
-  `/x/<toolset>` paths (e.g. `/x/issues`).
-- **Docker MCP Toolkit** (local stdio: `docker mcp gateway run`) — Docker Desktop's
-  MCP gateway; requires the Docker CLI with the MCP plugin (`docker mcp`). Exposes
-  the gateway's dynamic meta-tools (`mcp-find`, `mcp-add`, `mcp-exec`, …) so the
-  agent can discover and invoke catalog servers on demand; servers run as
-  containers with the gateway's secret/network isolation. Pre-enable servers with
-  `docker mcp server enable <name>` to pin a fixed toolset. No auth needed for the
-  gateway itself; individual servers may need `docker mcp secret` entries.
+Every tool call passes through `guardrails.ts` before it executes. Rules in
+[`.pi/guardrails.json`](.pi/guardrails.json):
 
-All MCP tools are exposed through a single `mcp` proxy tool to keep the per-session
-context footprint small. MCP config resolves from this repo's working directory, so
-repos checked out by the Slack backend cannot inject their own MCP servers via a
-committed `.mcp.json` (verified — a checkout's `.mcp.json` is not read). Start the
-Slack backend from the repo root so the same config applies there.
+- **Denied shell patterns** — `rm -rf /` and `rm -rf ~`, `git push --force` (without
+  `--force-with-lease`), `git reset --hard`.
+- **Protected paths** — `.env*`, `*.pem`, `*.key`, `.git/`, `.zen/`, and the rules file
+  itself.
+- **No writes outside the project root.**
 
-## Architecture & roadmap
+A repository can add rules in its own `.pi/guardrails.json`; they merge *tighten-only*.
+A missing or malformed rules file fails startup rather than running unguarded.
 
-The same extensions load in every pi mode, so the quant layer is built once and shared
-across all interaction surfaces (design.md §User Interaction):
+## Observability and evals
 
-1. **TUI** (done — this scaffold): `npm run agent`.
-2. **Slack backend** (done — `src/slack/`, see above): Slack threads ↔ pi sessions via
-   the SDK; repo checkout per thread; streamed replies via message edits.
-3. **Sandboxing**: run each backend session in a container (RPC subprocess), following
-   pi-chat's isolation model.
-4. **Eval/benchmark runner**: drive `pi --mode json` headlessly over task datasets
-   (beta-audit, portfolio construction, …), scoring outputs and reading cost/latency
-   from the traces.
-5. **MCP connectors** (done for alphaXiv + GitHub via `pi-mcp-adapter`, see above):
-   next up proprietary data connectors, via `.pi/mcp.json` or native tools in
-   `zen-tools/`.
+Every session writes a JSONL trace to `~/.zen/traces/<sessionId>.jsonl` (override with
+`ZEN_TRACE_DIR`): turn and tool latency, token usage, cost, model switches. Set
+`TRACE_TO_BRAINTRUST=true` and `BRAINTRUST_API_KEY` to also stream sessions — interactive
+and Slack — to [Braintrust](https://www.braintrust.dev).
 
-## References
+### Evidence trace fields
 
-- pi docs: <https://github.com/earendil-works/pi/tree/main/packages/coding-agent/docs>
-  (extensions.md, sdk.md, rpc.md, models.md, providers.md)
-- Design notes: [design.md](design.md)
+Every trace line carries `schema_version: 2` (v1 lines have no such field) plus these
+per-step fields. The trace holds pointers only — never file contents, prompts, or model
+outputs (write/edit content and bash heredocs are redacted from `args`). The `TraceLine`
+type is exported from `.pi/extensions/observability.ts`.
+
+| Field | Meaning |
+|---|---|
+| `role` | `plan` (step in `/zen plan` mode), `code` (`write`/`edit`), `check` (bash test/typecheck/lint command), else `other` |
+| `model` | `provider/model-id` used for the step; `null` if none selected |
+| `evidence_refs` | Pointers the step relied on: `file` (path + 1-indexed line range), `tool_call` (id), `url` (search result), `dataset` (id) |
+| `as_of` | When the evidence dates from — file mtime, search result publish date; `null` when unknown, never guessed |
+| `error` | `null`, or `{ type, message, tool_call_id }`; `type` is `tool_error`, `nonzero_exit`, `timeout`, `aborted`, `blocked`, or `model_error` |
+| `recovery` | `null`, or `{ action, attempts }` after a failed tool call: `retry` (same tool), `alternate_tool` (different tool), `gave_up` (run ended unresolved) |
+| `self_check` | `null`, or `{ what_was_checked, result }` on `check` steps: `pass`, `fail`, or `uncertain` (timed out, aborted, blocked) |
+
+`scripts/run_eval.py` runs the agent headlessly against `evals/evals.json` — fresh
+checkout per case, bash assertions, multiple attempts — and `scripts/aggregate.py`
+produces a `benchmark.json` with per-track pass rates and regressions. Guide:
+[docs/evals.md](docs/evals.md).
+
+## Configuration reference
+
+| Variable | Purpose |
+|---|---|
+| `FIREWORKS_API_KEY`, `ANTHROPIC_API_KEY`, `OPENAI_API_KEY` | Model provider keys (at least one) |
+| `EXA_API_KEY` | Enables the `exa_search` tool (web, code, paper search) |
+| `ALPHAXIV_API_KEY`, `RENDER_API_KEY` | MCP connector credentials |
+| `WQ_BRAIN_USERNAME`, `WQ_BRAIN_PASSWORD` | WorldQuant BRAIN credentials (`wq-alpha-research`) |
+| `ZEN_TRACE_DIR`, `ZEN_GUARDRAILS_CONFIG` | Trace directory; alternate guardrail rules file |
+| `TRACE_TO_BRAINTRUST`, `BRAINTRUST_API_KEY`, `BRAINTRUST_PROJECT` | Braintrust tracing (opt-in) |
+| `SLACK_BOT_TOKEN`, `SLACK_APP_TOKEN`, `ZEN_SLACK_*`, `GITHUB_TOKEN` | Slack backend — see [docs/slack.md](docs/slack.md) |
+
+## Development
+
+```bash
+npm run typecheck     # tsc --noEmit over extensions and Slack backend — run after any TS change
+npm run agent         # run the pinned pi version against this repository
+```
+
+| Path | Contents |
+|---|---|
+| `.pi/extensions/` | `guardrails.ts`, `observability.ts`, `modes.ts`, `zen-models-do.ts`, `zen-tools/` |
+| `.pi/prompts/`, `.pi/skills/` | Quant prompt templates; skills (`wq-alpha-research` is a submodule) |
+| `.pi/mcp.json`, `.pi/guardrails.json`, `.pi/settings.json` | Connector, guardrail, and default-model configuration |
+| `src/slack/` | Slack backend (pi SDK) |
+| `scripts/`, `evals/` | Eval harness and cases |
+| `docs/`, `design.md` | Deep-dive docs; design notes |
+
+Extensions are TypeScript loaded by pi without a build step; keep them dependency-light.
+Contributor notes for agents are in [AGENTS.md](AGENTS.md). Never commit `.zen/`,
+`.pi/npm/`, or secrets.
+
+## License
+
+Copyright 2026 zen-tradings. Licensed under the [Apache License, Version 2.0](LICENSE).

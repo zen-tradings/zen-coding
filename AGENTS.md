@@ -7,11 +7,14 @@ runs in this repo. See README.md and design.md for the full picture.
 ## Commands
 
 - `npm install` — install dependencies (Node >= 22)
-- `npm run agent` — launch the pi TUI with zen extensions
+- `pi` (run in the repo root) — launch the pi TUI with zen extensions; `npm run agent`
+  does the same with the pi version pinned in `package.json`
 - `npm run typecheck` — type-check the TS extensions (`tsc --noEmit`); run this after
   editing anything in `.pi/extensions/` or `src/`
 - `npm run slack` — start the Slack backend (Slack threads ↔ pi sessions)
-- Headless: `npx pi -p "..."`, `npx pi --mode json -p "..."`, `npx pi --mode rpc`
+- Headless: `pi -p "..."`, `pi --mode json -p "..."`, `pi --mode rpc` — non-interactive
+  modes skip the trust prompt, so pass `-a` (or trust the project once interactively)
+  for the zen extensions to load
 
 ## Environment variables
 
@@ -27,8 +30,6 @@ runs in this repo. See README.md and design.md for the full picture.
 - `ALPHAXIV_API_KEY` — for the alphaXiv MCP server
 - `RENDER_API_KEY` — for the Render MCP server
 - GitHub MCP auth reuses `gh auth token` (no PAT needed)
-- `ZEN_LOCAL_BASE_URL` / `ZEN_LOCAL_MODELS` — self-hosted model endpoints
-  (see `.pi/extensions/zen-models.ts`)
 - `WQ_BRAIN_USERNAME` / `WQ_BRAIN_PASSWORD` — WorldQuant BRAIN credentials for the
   `wq-alpha-research` skill (`.pi/skills/wq-alpha-research`, a git submodule). Its
   scripts also accept an untracked `credential.txt` (gitignored; never commit it).
@@ -44,20 +45,24 @@ runs in this repo. See README.md and design.md for the full picture.
   `npm run typecheck` must pass.
 - Guardrails (denied bash patterns, protected paths) are enforced by
   `.pi/extensions/guardrails.ts` from `.pi/guardrails.json` — do not bypass them.
-- `.zen/` is runtime state (telemetry traces); never write to or read from it as a
-  source of truth, and never commit it.
+- `.zen/` is runtime state (Slack backend thread map and checkouts); never write to or
+  read from it as a source of truth, and never commit it. Telemetry traces go to
+  `~/.zen/traces/` (override: `ZEN_TRACE_DIR`), outside the repo.
 - `.pi/npm/` is machine-local (installed packages) — never commit.
-- MCP servers are configured in `.pi/mcp.json` at the repo root; all MCP tools go
-  through the single `mcp` proxy tool.
+- MCP servers are configured in `.pi/mcp.json` at the repo root and loaded by pi's
+  built-in MCP support (no adapter package). Tools are named `mcp__<server>__<tool>`
+  and reached through `codemode` scripts by default; validate config with `pi mcp list`.
 - Committed secrets are forbidden (`.env`, `*.pem`, `*.key` are protected paths).
 
 ## Project layout
 
-- `.pi/extensions/` — guardrails, observability (JSONL traces → `.zen/traces/`),
-  `/zen normal|clarify|plan` modes, model registration (DigitalOcean + self-hosted), zen-tools
+- `.pi/extensions/` — guardrails, observability (JSONL traces → `~/.zen/traces/`),
+  `/zen normal|clarify|plan` modes, model registration (DigitalOcean, `zen-models-do.ts`), zen-tools
 - `.pi/skills/` — shared skills (`wq-alpha-research` is a git submodule;
   clone with `git submodule update --init`)
 - `.pi/prompts/` — shared prompt templates
 - `src/slack/` — Slack backend (pi SDK)
-- `evals/` — eval/benchmark runner work
+- `evals/`, `scripts/` — eval harness (`run_eval.py`, `aggregate.py`) and case definitions
+- `docs/` — deep-dive docs (Slack internals, MCP connectors, install-anywhere, evals);
+  README.md is the user-facing front page — keep reference detail in `docs/`
 - `design.md` — architecture and roadmap

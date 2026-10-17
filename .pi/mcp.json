@@ -2,36 +2,38 @@
   "mcpServers": {
     "alphaxiv": {
       "url": "https://api.alphaxiv.org/mcp/v1",
-      "auth": "bearer",
-      "bearerTokenEnv": "ALPHAXIV_API_KEY",
-      "requestTimeoutMs": 60000
+      "headers": { "Authorization": "Bearer ${ALPHAXIV_API_KEY}" },
+      "description": "Quant paper discovery, full-text Q&A, AI-digested reports, alphaXiv library",
+      "timeout": 60
     },
     "github": {
       "url": "https://api.githubcopilot.com/mcp/",
-      "auth": "bearer",
-      "bearerToken": "!gh auth token",
-      "requestTimeoutMs": 60000
+      "headers": { "Authorization": "!echo Bearer $(gh auth token)" },
+      "description": "GitHub issues, pull requests, code search, notifications (as the gh CLI user)",
+      "timeout": 60
     },
     "paper-search": {
       "command": "uvx",
-      "args": ["paper-search-mcp"],
-      "requestTimeoutMs": 120000
+      "args": ["--with", "mcp<2", "paper-search-mcp"],
+      "description": "Search and download papers across arXiv, SSRN, Semantic Scholar, PubMed, OpenAlex, and more",
+      "timeout": 120
     },
     "docker": {
       "command": "docker",
       "args": ["mcp", "gateway", "run"],
-      "requestTimeoutMs": 120000
+      "description": "Docker MCP Toolkit gateway: discover and run catalog MCP servers in containers",
+      "timeout": 120
     },
     "mintlify-docs": {
       "url": "https://www.mintlify.com/docs/mcp",
-      "auth": false,
-      "requestTimeoutMs": 60000
+      "description": "Live search over the official Mintlify documentation",
+      "timeout": 60
     },
     "render": {
       "url": "https://mcp.render.com/mcp",
-      "auth": "bearer",
-      "bearerTokenEnv": "RENDER_API_KEY",
-      "requestTimeoutMs": 60000
+      "headers": { "Authorization": "Bearer ${RENDER_API_KEY}" },
+      "description": "Inspect and manage services, deploys, and logs on Render",
+      "timeout": 60
     }
   }
 }
