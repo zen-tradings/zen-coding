@@ -25,8 +25,9 @@ cd zen-coding
 git submodule update --init   # optional: wq-alpha-research skill
 npm install                   # extension dependencies
 
-# 3. Set a provider key (default model is Kimi K3 on Fireworks; Anthropic and OpenAI also supported — switch with /model)
-export FIREWORKS_API_KEY=...
+# 3. Set a provider key (default model is glm-5.3-flash on DigitalOcean GenAI; Fireworks, Anthropic and OpenAI also supported — switch with /model)
+export ZEN_DIGITALOCEAN_API_KEY=...        # DO GenAI Model Access Key
+#export FIREWORKS_API_KEY=...              # alternative low-cost provider (Kimi K3)
 
 # 4. Run pi inside the repository
 pi
@@ -110,10 +111,19 @@ inside this repository to use them. See [docs/install-anywhere.md](docs/install-
 
 ## Models
 
-Supported providers are **Anthropic**, **OpenAI**, and one low-cost provider,
-**Fireworks** (Kimi K3, the project default), used for cross-model comparison. Export
-the provider key (`ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `FIREWORKS_API_KEY`) and select
-a model with `/model`.
+Supported providers are **Anthropic**, **OpenAI**, and two low-cost providers,
+**DigitalOcean GenAI** (the project default when configured) and **Fireworks**
+(Kimi K3), used for cross-model comparison. Export the provider key
+(`ZEN_DIGITALOCEAN_API_KEY`, `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `FIREWORKS_API_KEY`)
+and select a model with `/model`.
+
+**DigitalOcean GenAI** (the project default when configured): export
+`ZEN_DIGITALOCEAN_API_KEY` (Model Access Key) and models are auto-discovered from
+`ZEN_DIGITALOCEAN_BASE_URL` (default `https://inference.do-ai.run/v1`); optional
+`ZEN_DIGITALOCEAN_MODELS` and `ZEN_DIGITALOCEAN_REASONING_MODELS` override the discovered
+list and DeepSeek-style thinking per model — non-chat models
+(embeddings/rerankers/image/audio/video) are filtered out automatically. See
+`.pi/extensions/zen-models-do.ts`.
 
 The project default lives in `.pi/settings.json` (`defaultProvider` / `defaultModel`).
 Comparing models on cost, latency, and pass rate is a matter of re-running the
@@ -234,7 +244,7 @@ npm run agent         # run the pinned pi version against this repository
 
 | Path | Contents |
 |---|---|
-| `.pi/extensions/` | `guardrails.ts`, `observability.ts`, `modes.ts`, `zen-tools/` |
+| `.pi/extensions/` | `guardrails.ts`, `observability.ts`, `modes.ts`, `zen-models-do.ts`, `zen-tools/` |
 | `.pi/prompts/`, `.pi/skills/` | Quant prompt templates; skills (`wq-alpha-research` is a submodule) |
 | `.pi/mcp.json`, `.pi/guardrails.json`, `.pi/settings.json` | Connector, guardrail, and default-model configuration |
 | `src/slack/` | Slack backend (pi SDK) |

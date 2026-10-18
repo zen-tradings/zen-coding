@@ -20,7 +20,7 @@ const modelRuntime = await ModelRuntime.create();
 const available = await modelRuntime.getAvailable();
 if (available.length === 0) {
   throw new Error(
-    "No model provider configured: export DEEPSEEK_API_KEY / ANTHROPIC_API_KEY / … before starting.",
+    "No model provider configured: export ZEN_DIGITALOCEAN_API_KEY (see .pi/extensions/zen-models-do.ts) or DEEPSEEK_API_KEY / ANTHROPIC_API_KEY / … before starting.",
   );
 }
 
