@@ -40,13 +40,9 @@ in `package.json`, if you prefer not to install pi globally.
 ```
 /model                          pick a model
 /zen clarify                    ask clarifying questions before acting
-/alpha short-term reversal in small caps, conditioned on volume
 ```
 ## Features
 
-- **Quant workflows as slash commands** — `/alpha`, `/beta-audit`, `/portfolio`,
-  `/fundamental`, `/paper-replicate`, `/audit`, `/backtest`, each a rigorous
-  step-by-step procedure rather than a one-line prompt.
 - **Guardrails at the tool boundary** — destructive shell commands blocked, secrets and
   protected paths unwritable, rules that repositories can only tighten.
 - **Cross-model comparison** — Anthropic, OpenAI, and Fireworks (low-cost); switch
@@ -71,17 +67,10 @@ in `package.json`, if you prefer not to install pi globally.
 | `clarify` | Ask concise clarifying questions first when the request is ambiguous. |
 | `plan` | Read-only. Explore, produce a step-by-step plan, stop. Edits are blocked. |
 
-**Quant commands** — prompt templates in `.pi/prompts/`:
+**Commands** — prompt templates in `.pi/prompts/`:
 
 | Command | What it does |
 |---|---|
-| `/alpha <hypothesis>` | Alpha/factor research from hypothesis to IC, decay, turnover, and correlation with existing factors |
-| `/beta-audit <strategy>` | Decompose returns into factor exposures and verify hedging claims |
-| `/portfolio <objective>` | Build or review an allocation given signals, constraints, and a risk model |
-| `/fundamental <ticker>` | Filings-based fundamental analysis with every claim traceable to a source |
-| `/paper-replicate <paper>` | Extract a paper's methodology, implement it, verify against reported numbers |
-| `/audit <target>` | Adversarial audit — try to falsify a strategy, backtest, or finding |
-| `/backtest <path>` | Review a backtest for methodological soundness, then interpret results |
 | `/eval [case-id ...]` | Run the eval suite and report the verdict |
 
 **Skills** load automatically when a task matches, or on demand with `/skill:<name>`.
@@ -245,7 +234,7 @@ npm run agent         # run the pinned pi version against this repository
 | Path | Contents |
 |---|---|
 | `.pi/extensions/` | `guardrails.ts`, `observability.ts`, `modes.ts`, `zen-models-do.ts`, `zen-tools/` |
-| `.pi/prompts/`, `.pi/skills/` | Quant prompt templates; skills (`wq-alpha-research` is a submodule) |
+| `.pi/prompts/`, `.pi/skills/` | Prompt templates (`/eval`); skills (`wq-alpha-research` is a submodule) |
 | `.pi/mcp.json`, `.pi/guardrails.json`, `.pi/settings.json` | Connector, guardrail, and default-model configuration |
 | `src/slack/` | Slack backend (pi SDK) |
 | `scripts/`, `evals/` | Eval harness and cases |

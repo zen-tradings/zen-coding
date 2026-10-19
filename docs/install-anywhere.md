@@ -44,7 +44,7 @@ only** — `.pi/extensions/`:
 | `modes.ts` | `/zen` modes: `normal`, `clarify`, `plan` |
 | `zen-tools/` | `exa_search` (needs `EXA_API_KEY`) |
 
-The quant slash commands (`.pi/prompts/`), skills (`.pi/skills/`), and MCP connectors
+The prompt templates (`.pi/prompts/`), skills (`.pi/skills/`), and MCP connectors
 (`.pi/mcp.json`) are *project* resources: pi discovers them when you run it inside the
 zen-coding repository. To use them elsewhere today, run `pi` from a zen-coding checkout,
 or copy the prompt files into `~/.pi/agent/prompts/`.
