@@ -46,6 +46,11 @@
       "headers": { "Authorization": "Sentry-Bearer ${SENTRY_ACCESS_TOKEN}" },
       "description": "Search and triage Sentry errors, analyze performance, read Sentry docs",
       "timeout": 60
+    },
+    "massive": {
+      "url": "https://mcp.massive.com/",
+      "description": "Massive U.S. market data: search_endpoints / call_api / query over the Massive REST API (dividends, trades, quotes, options chains); OAuth sign-in on first use",
+      "timeout": 60
     }
   }
 }
