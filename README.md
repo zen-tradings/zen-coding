@@ -8,7 +8,7 @@ guardrails against the mistakes that quietly ruin research code.
 
 It is a layer on top of [pi](https://github.com/earendil-works/pi), an open-source
 coding-agent harness: pi provides the agent loop, terminal UI, sessions, and model
-providers; zen-coding adds extensions, prompt templates, skills, and MCP configuration
+providers; zen-coding adds extensions, skills, and MCP configuration
 that pi discovers when you run it in this repository. The command you run is `pi`.
 
 ## Quick start
@@ -66,12 +66,6 @@ in `package.json`, if you prefer not to install pi globally.
 | `normal` | Default. Plan and implement. |
 | `clarify` | Ask concise clarifying questions first when the request is ambiguous. |
 | `plan` | Read-only. Explore, produce a step-by-step plan, stop. Edits are blocked. |
-
-**Commands** — prompt templates in `.pi/prompts/`:
-
-| Command | What it does |
-|---|---|
-| `/eval [case-id ...]` | Run the eval suite and report the verdict |
 
 **Skills** load automatically when a task matches, or on demand with `/skill:<name>`.
 
@@ -234,7 +228,7 @@ npm run agent         # run the pinned pi version against this repository
 | Path | Contents |
 |---|---|
 | `.pi/extensions/` | `guardrails.ts`, `observability.ts`, `modes.ts`, `zen-models-do.ts`, `zen-tools/` |
-| `.pi/prompts/`, `.pi/skills/` | Prompt templates (`/eval`); skills (`wq-alpha-research` is a submodule) |
+| `.pi/skills/` | Skills (`wq-alpha-research` is a submodule) |
 | `.pi/mcp.json`, `.pi/guardrails.json`, `.pi/settings.json` | Connector, guardrail, and default-model configuration |
 | `src/slack/` | Slack backend (pi SDK) |
 | `scripts/`, `evals/` | Eval harness and cases |

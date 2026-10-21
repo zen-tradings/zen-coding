@@ -64,8 +64,8 @@ python3 scripts/aggregate.py                # newest iteration
 python3 scripts/aggregate.py --iteration 5
 ```
 
-Inside the agent, `/eval [case-id ...] [--model m --provider p]` runs both steps and
-reports the verdict — regressions first.
+Inside the agent, running the eval harness steps directly (or asking the agent to run
+them) executes both steps and reports the verdict — regressions first.
 
 ## Output layout
 

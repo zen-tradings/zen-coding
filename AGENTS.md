@@ -60,7 +60,6 @@ runs in this repo. See README.md and design.md for the full picture.
   `/zen normal|clarify|plan` modes, model registration (DigitalOcean, `zen-models-do.ts`), zen-tools
 - `.pi/skills/` — shared skills (`wq-alpha-research` is a git submodule;
   clone with `git submodule update --init`)
-- `.pi/prompts/` — shared prompt templates
 - `src/slack/` — Slack backend (pi SDK)
 - `evals/`, `scripts/` — eval harness (`run_eval.py`, `aggregate.py`) and case definitions
 - `docs/` — deep-dive docs (Slack internals, MCP connectors, install-anywhere, evals);
