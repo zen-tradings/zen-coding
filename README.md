@@ -180,9 +180,11 @@ A missing or malformed rules file fails startup rather than running unguarded.
 ## Observability and evals
 
 Every session writes a JSONL trace to `~/.zen/traces/<sessionId>.jsonl` (override with
-`ZEN_TRACE_DIR`): turn and tool latency, token usage, cost, model switches. Set
-`TRACE_TO_BRAINTRUST=true` and `BRAINTRUST_API_KEY` to also stream sessions — interactive
-and Slack — to [Braintrust](https://www.braintrust.dev).
+`ZEN_TRACE_DIR`): turn and tool latency, token usage, cost, model switches. To also
+stream sessions to [Braintrust](https://www.braintrust.dev): for interactive sessions run
+`bt trace enable pi --project zen-coding` (see AGENTS.md; `bt trace run --tag ...` for
+per-invocation categories); for Slack-backend sessions set `TRACE_TO_BRAINTRUST=true`
+and `BRAINTRUST_API_KEY`.
 
 ### Evidence trace fields
 
@@ -215,7 +217,7 @@ produces a `benchmark.json` with per-track pass rates and regressions. Guide:
 | `ALPHAXIV_API_KEY`, `RENDER_API_KEY` | MCP connector credentials |
 | `WQ_BRAIN_USERNAME`, `WQ_BRAIN_PASSWORD` | WorldQuant BRAIN credentials (`wq-alpha-research`) |
 | `ZEN_TRACE_DIR`, `ZEN_GUARDRAILS_CONFIG` | Trace directory; alternate guardrail rules file |
-| `TRACE_TO_BRAINTRUST`, `BRAINTRUST_API_KEY`, `BRAINTRUST_PROJECT` | Braintrust tracing (opt-in) |
+| `TRACE_TO_BRAINTRUST`, `BRAINTRUST_API_KEY`, `BRAINTRUST_PROJECT` | Slack-backend Braintrust tracing (opt-in); interactive sessions use `bt trace enable` instead |
 | `SLACK_BOT_TOKEN`, `SLACK_APP_TOKEN`, `ZEN_SLACK_*`, `GITHUB_TOKEN` | Slack backend — see [docs/slack.md](docs/slack.md) |
 
 ## Development

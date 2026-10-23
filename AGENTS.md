@@ -33,10 +33,15 @@ runs in this repo. See README.md and design.md for the full picture.
 - `WQ_BRAIN_USERNAME` / `WQ_BRAIN_PASSWORD` — WorldQuant BRAIN credentials for the
   `wq-alpha-research` skill (`.pi/skills/wq-alpha-research`, a git submodule). Its
   scripts also accept an untracked `credential.txt` (gitignored; never commit it).
-- Braintrust tracing (opt-in, off by default): `TRACE_TO_BRAINTRUST=true`,
-  `BRAINTRUST_API_KEY`, `BRAINTRUST_PROJECT=zen-coding`. Restart the process
-  after setting these. Covers both interactive sessions (via
-  `@braintrust/pi-extension`) and Slack-backend sessions (via
+- Braintrust tracing (opt-in, off by default): enable with `bt trace enable pi
+  --project zen-coding` (requires `bt` >= 0.19.3; settings live in
+  `~/.pi/agent/braintrust.json`, overridable per-project via `.pi/braintrust.json`),
+  then restart pi. Per-invocation tagging for cost/usage attribution:
+  `bt trace run --tag <category> --additional-metadata '{"category":"<category>"}' pi -- -p "..."`.
+  Note: pre-v2 env vars (`TRACE_TO_BRAINTRUST`, `BRAINTRUST_PROJECT`, ...) are no
+  longer read by `@braintrust/pi-extension` >= 2.0.0 — they still apply to the
+  Slack backend below. Covers interactive
+  sessions (via `@braintrust/pi-extension`) and Slack-backend sessions (via
   `src/slack/tracing.ts`, which wraps the pi SDK with `wrapPiCodingAgentSDK`).
 
 ## Conventions

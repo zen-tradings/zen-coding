@@ -12,12 +12,6 @@
       "description": "Exa web/code/paper neural search (web search, company research, code context)",
       "timeout": 60
     },
-    "digitalocean": {
-      "url": "https://mcp.digitalocean.com/mcp",
-      "headers": { "Authorization": "Bearer ${ZEN_DIGITALOCEAN_API_KEY}" },
-      "description": "Manage DigitalOcean resources: droplets, apps, databases, GenAI, deploys",
-      "timeout": 60
-    },
     "github": {
       "url": "https://api.githubcopilot.com/mcp/",
       "headers": { "Authorization": "!echo Bearer $(gh auth token)" },
@@ -50,6 +44,17 @@
     "massive": {
       "url": "https://mcp.massive.com/",
       "description": "Massive U.S. market data: search_endpoints / call_api / query over the Massive REST API (dividends, trades, quotes, options chains); OAuth sign-in on first use",
+      "timeout": 60
+    },
+    "optopsy": {
+      "command": "~/.pi/optopsy-mcp/target/release/optopsy-mcp",
+      "cwd": "~/.pi/optopsy-mcp",
+      "description": "Self-hosted Optopsy options/stock backtesting engine (Rust): backtest, grid/bayesian sweeps and Rhai custom strategies; stats tools (drawdown, monte carlo, regime detect, portfolio optimize); reads Parquet from ~/.optopsy/cache/ (options/ + OHLCV subfolders)",
+      "timeout": 300
+    },
+    "tradingview": {
+      "url": "https://mcp.tradingview.com/mcp",
+      "description": "Official TradingView MCP (beta): quotes, price history, technicals, screener, fundamentals, news, calendars, watchlists and alerts; OAuth sign-in with your TradingView account (Essential plan or higher), data is delayed during beta",
       "timeout": 60
     }
   }

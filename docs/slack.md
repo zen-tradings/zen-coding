@@ -69,7 +69,9 @@ the ongoing run rather than queued as a new turn. `/zen plan`, `/zen clarify`, a
 
 Set `TRACE_TO_BRAINTRUST=true` and `BRAINTRUST_API_KEY` to stream backend sessions to
 Braintrust; `src/slack/tracing.ts` wraps the pi SDK with `wrapPiCodingAgentSDK` so
-SDK-driven sessions are traced the same way interactive ones are. Local JSONL traces
+SDK-driven sessions are traced. (Interactive sessions are traced separately via
+`bt trace enable pi` — the env vars above are the Slack backend's own opt-in and are not
+read by `@braintrust/pi-extension` >= 2.0.0.) Local JSONL traces
 (`~/.zen/traces/`) are written regardless.
 
 ## Configuration reference
@@ -87,7 +89,7 @@ All settings are environment variables, read once at startup (`src/slack/config.
 | `ZEN_SLACK_IDLE_MINUTES` | no | `60` | Dispose sessions idle longer than this; they resume on the next message |
 | `ZEN_SLACK_ALLOWED_USERS` | no | everyone | Comma-separated Slack user IDs allowed to use the bot |
 | `GITHUB_TOKEN` / `GH_TOKEN` | no | — | Clone private repositories |
-| `TRACE_TO_BRAINTRUST`, `BRAINTRUST_API_KEY`, `BRAINTRUST_PROJECT` | no | off | Braintrust tracing (see above) |
+| `TRACE_TO_BRAINTRUST`, `BRAINTRUST_API_KEY`, `BRAINTRUST_PROJECT` | no | off | Slack-backend Braintrust tracing (interactive sessions use `bt trace enable`) |
 
 ## Slack app manifest
 

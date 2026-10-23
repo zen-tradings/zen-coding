@@ -7,3 +7,6 @@ evals/runs/
 __pycache__/
 .claude/
 credential.txt
+
+# optopsy MCP runtime database
+data/
