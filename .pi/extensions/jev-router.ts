@@ -1,24 +1,30 @@
 /**
- * Jev router - a virtual model that plans on a strong model and implements on a cheap one.
+ * Jev router - a virtual model that plans on a strong model and implements on a cheap one,
+ * tuned for quant research & development.
  *
  * Registers `jev/auto`, which routes between three DigitalOcean GenAI models (see
  * zen-models-do.ts for provider registration):
  *
- * - Planning: Sol for complex work, Terra otherwise. The Jev classifier rates the first user
- *   message; planning stays on the chosen model.
- * - Implementation: Luna.
+ * - Planning: a strong frontier model (default anthropic-claude-opus-5) for complex work, a
+ *   mid-tier model (default glm-5.3) otherwise. The Jev classifier rates the first user message;
+ *   planning stays on the chosen model.
+ * - Implementation: a strong-but-cheap reasoner (default deepseek-v4-pro).
  *
- * Defaults are the DO-hosted OpenAI 5.6 trio; each role can be pointed at any DigitalOcean model
- * via ZEN_JEV_SOL / ZEN_JEV_TERRA / ZEN_JEV_LUNA (provider is always digitalocean).
+ * Roles are overridable via ZEN_JEV_SOL / ZEN_JEV_TERRA / ZEN_JEV_LUNA (provider is always
+ * digitalocean).
  *
  * The planning model explores, plans, and makes the first edit. After the first successful `edit`
- * or `write` tool call, the next request of the same turn goes to Luna, and the session stays
- * there. A session therefore switches models once and accepts a single prompt-cache miss.
+ * or `write` tool call, the next request of the same turn goes to the implementation model, and
+ * the session stays there. On a later substantial user message the complexity classifier re-rates
+ * the work: demanding requests (quant backtests, subtle debugging, feature engineering) return to
+ * the strong planner for that turn; short follow-ups ("continue", "fix the label") stay put to
+ * avoid needless cache misses and classifier latency. Each turn therefore switches models at most
+ * once, and only upward escalation is automatic — no churn back down.
  *
  * The phase is router state: Pi stores it on the session branch, so it follows the session tree
  * and survives compaction. The selected thinking level passes through and is clamped to the
  * chosen model's capabilities. Requests outside the agent loop, such as compaction summaries,
- * go to Luna.
+ * go to the implementation model.
  *
  * Requires ZEN_DIGITALOCEAN_API_KEY (digitalocean provider) and, for the complexity classifier,
  * TypeSafe credentials (TYPESAFE_API_KEY) — without them planning falls back to Terra.
@@ -29,9 +35,15 @@ import type { Message } from "@earendil-works/pi-ai";
 import type { ExtensionAPI, ExtensionContext, ModelRoute, ModelRouteRequest } from "@earendil-works/pi-coding-agent";
 
 const PROVIDER = "digitalocean";
-const SOL = process.env.ZEN_JEV_SOL ?? "openai-gpt-5.6-sol";
-const TERRA = process.env.ZEN_JEV_TERRA ?? "openai-gpt-5.6-terra";
-const LUNA = process.env.ZEN_JEV_LUNA ?? "openai-gpt-5.6-luna";
+// Quant-calibrated defaults: a frontier reasoner for hard planning, the usual default model for
+// ordinary planning, and a strong-but-cheap reasoner for implementation, where most quant
+// correctness risk lives (lookahead bugs, off-by-one lookbacks, data pipeline errors).
+const SOL = process.env.ZEN_JEV_SOL ?? "anthropic-claude-opus-5";
+const TERRA = process.env.ZEN_JEV_TERRA ?? "glm-5.3";
+const LUNA = process.env.ZEN_JEV_LUNA ?? "deepseek-v4-pro";
+
+/** User messages shorter than this are follow-ups; skip re-classification to protect the cache. */
+const REESCALATE_MIN_CHARS = 120;
 
 /** Tools whose successful result means implementation has started. */
 const EDIT_TOOLS = new Set(["edit", "write"]);
@@ -75,8 +87,9 @@ function editedThisTurn(messages: readonly Message[]): boolean {
 		.some((message) => message.role === "toolResult" && EDIT_TOOLS.has(message.toolName) && !message.isError);
 }
 
-/** Planning model for a new session: Sol for complex work, Terra otherwise or when Jev is unavailable.
- *  A previous model on the digitalocean provider whose id matches either planning role is kept. */
+/** Planning model for a new session or an escalated turn: Sol for complex work, Terra otherwise
+ *  or when Jev is unavailable. A previous model whose id matches either planning role is kept, so
+ *  switching to jev/auto (or re-planning) costs no cache miss when it reuses that model. */
 async function choosePlanningModel(request: JevRequest, ctx: ExtensionContext): Promise<string> {
 	// Keep a planning model the session already uses, so switching to jev/auto costs no cache miss.
 	const previous = request.previous?.model;
@@ -91,10 +104,15 @@ async function choosePlanningModel(request: JevRequest, ctx: ExtensionContext): 
 			questions: {
 				complexity: {
 					type: "choice",
-					instructions: "How demanding is the software engineering work requested in `prompt`?",
+					instructions:
+						"How demanding is the software engineering work requested in `prompt`? " +
+						"Numerically or statistically delicate work counts as demanding.",
 					criteria: {
 						standard: "Ordinary features, fixes, reviews, or questions",
-						complex: "Subtle design, cross-cutting changes, or hard debugging",
+						complex:
+							"Subtle design, cross-cutting changes, hard debugging, or correctness-sensitive " +
+							"quantitative work: backtests, trading logic, feature engineering, statistics, " +
+							"anything where lookahead, alignment, or off-by-one errors are plausible",
 					},
 				},
 			},
@@ -122,9 +140,20 @@ export default function (pi: ExtensionAPI) {
 				const model = await choosePlanningModel(request, ctx);
 				return routeTo(request, ctx, model, { phase: "planning", model });
 			}
-			// The planning model made the first edit: hand the rest of the work to Luna.
+			// The planning model made the first edit: hand the rest of the work to the implementation
+			// model.
 			if (state.phase === "planning" && editedThisTurn(request.messages)) {
 				return routeTo(request, ctx, LUNA, { phase: "implementation", model: LUNA });
+			}
+			// Escalation only: a substantial new user message during implementation gets re-rated, and
+			// complex work returns to the strong planner for that turn. Simple follow-ups stay on the
+			// implementation model; never churn back down mid-session.
+			if (state.phase === "implementation" && request.reason === "user") {
+				const text = lastUserText(request.messages);
+				if (text.length >= REESCALATE_MIN_CHARS) {
+					const model = await choosePlanningModel(request, ctx);
+					if (model === SOL) return routeTo(request, ctx, SOL, { phase: "planning", model: SOL });
+				}
 			}
 			return routeTo(request, ctx, state.model);
 		},
