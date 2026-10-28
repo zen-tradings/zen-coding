@@ -12,6 +12,12 @@
  * would read <session cwd>/.pi/mcp.json — the checkout — so its file loading is
  * disabled and the servers from zen-coding's own .pi/mcp.json are registered
  * instead. A cloned repo can therefore never add or redirect MCP servers.
+ *
+ * Langfuse tracing: project pi packages (.pi/settings.json) are trust-gated and
+ * never load in SDK sessions, so the @langfuse/pi-observability-plugin extension
+ * is added explicitly via additionalExtensionPaths. It no-ops unless Langfuse
+ * credentials are present (LANGFUSE_PUBLIC_KEY/SECRET_KEY env vars or
+ * ~/.pi/agent/langfuse.json); LANGFUSE_TRACING_ENABLED=false is the kill switch.
  */
 import * as pi from "@earendil-works/pi-coding-agent";
 import type {
@@ -22,7 +28,6 @@ import type {
 } from "@earendil-works/pi-coding-agent";
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { maybeWrapPiForTracing } from "./tracing.js";
 
 const MAX_CONTEXT_CHARS = 20_000;
 
@@ -76,6 +81,21 @@ function loadZenMcpServers(zenRoot: string): Array<[string, McpServerConfig]> {
   }
 }
 
+/**
+ * Locate the Langfuse pi-plugin extension entry (raw TS, loaded by pi directly).
+ * Installed by `pi install npm:@langfuse/pi-observability-plugin` into .pi/npm
+ * (project scope, per .pi/settings.json); also accept a plain npm install as a
+ * fallback. Returns undefined when not installed — the Slack backend then runs
+ * untraced (Langfuse tracing stays optional).
+ */
+function resolveLangfuseExtensionPath(zenRoot: string): string | undefined {
+  const candidates = [
+    join(zenRoot, ".pi", "npm", "node_modules", "@langfuse", "pi-observability-plugin", "src", "index.ts"),
+    join(zenRoot, "node_modules", "@langfuse", "pi-observability-plugin", "src", "index.ts"),
+  ];
+  return candidates.find((path) => existsSync(path));
+}
+
 export async function createThreadSession(opts: ThreadSessionOptions): Promise<AgentSession> {
   const {
     createAgentSession,
@@ -86,7 +106,7 @@ export async function createThreadSession(opts: ThreadSessionOptions): Promise<A
     getAgentDir,
     resolveCliModel,
     SessionManager,
-  } = await maybeWrapPiForTracing(pi);
+  } = pi;
 
   const checkoutContext = loadCheckoutContext(opts.cwd, opts.zenRoot);
   const mcpServers = loadZenMcpServers(opts.zenRoot);
@@ -94,9 +114,20 @@ export async function createThreadSession(opts: ThreadSessionOptions): Promise<A
     for (const [name, config] of mcpServers) api.registerMcpServer(name, config);
   };
 
+  const langfuseExtensionPath = resolveLangfuseExtensionPath(opts.zenRoot);
+  if (!langfuseExtensionPath && process.env.LANGFUSE_PUBLIC_KEY) {
+    console.warn(
+      "[zen-slack] LANGFUSE_PUBLIC_KEY is set but @langfuse/pi-observability-plugin is not installed — " +
+        "run `pi install npm:@langfuse/pi-observability-plugin` to trace Slack sessions to Langfuse.",
+    );
+  }
+
   const loader = new DefaultResourceLoader({
     cwd: opts.zenRoot,
     agentDir: getAgentDir(),
+    // Load the Langfuse plugin like any file extension. It self-disables without
+    // credentials, so adding the path unconditionally is safe.
+    ...(langfuseExtensionPath ? { additionalExtensionPaths: [langfuseExtensionPath] } : {}),
     extensionFactories: [
       createCodemodeExtension(),
       createToolSearchExtension(),

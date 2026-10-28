@@ -23,7 +23,6 @@
   "dependencies": {
     "@slack/bolt": "^5.0.0",
     "@slack/web-api": "^8.0.0",
-    "braintrust": "^3.27.0",
     "minimatch": "^10.2.5"
   },
   "peerDependencies": {

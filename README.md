@@ -52,7 +52,7 @@ in `package.json`, if you prefer not to install pi globally.
 - **Slack bot** — @-mention with a GitHub link; the agent clones the repo and streams
   its reply into the thread.
 - **Observability and evals** — JSONL traces of latency, tokens, and cost per session;
-  optional Braintrust; a reproducible eval harness for scoring models on identical tasks.
+  optional Langfuse tracing; a reproducible eval harness for scoring models on identical tasks.
 
 
 ## Usage
@@ -181,10 +181,11 @@ A missing or malformed rules file fails startup rather than running unguarded.
 
 Every session writes a JSONL trace to `~/.zen/traces/<sessionId>.jsonl` (override with
 `ZEN_TRACE_DIR`): turn and tool latency, token usage, cost, model switches. To also
-stream sessions to [Braintrust](https://www.braintrust.dev): for interactive sessions run
-`bt trace enable pi --project zen-coding` (see AGENTS.md; `bt trace run --tag ...` for
-per-invocation categories); for Slack-backend sessions set `TRACE_TO_BRAINTRUST=true`
-and `BRAINTRUST_API_KEY`.
+stream sessions to [Langfuse](https://langfuse.com), set `LANGFUSE_PUBLIC_KEY` and
+`LANGFUSE_SECRET_KEY` (optionally `LANGFUSE_BASE_URL`, `LANGFUSE_TRACING_ENVIRONMENT`,
+`LANGFUSE_USER_ID`); this covers both interactive sessions (via the
+`@langfuse/pi-observability-plugin` project pi package) and Slack-backend sessions (the
+same plugin, wired in `src/slack/agent.ts`). `LANGFUSE_TRACING_ENABLED=false` disables it.
 
 ### Evidence trace fields
 
@@ -217,7 +218,7 @@ produces a `benchmark.json` with per-track pass rates and regressions. Guide:
 | `ALPHAXIV_API_KEY`, `RENDER_API_KEY` | MCP connector credentials |
 | `WQ_BRAIN_USERNAME`, `WQ_BRAIN_PASSWORD` | WorldQuant BRAIN credentials (`wq-alpha-research`) |
 | `ZEN_TRACE_DIR`, `ZEN_GUARDRAILS_CONFIG` | Trace directory; alternate guardrail rules file |
-| `TRACE_TO_BRAINTRUST`, `BRAINTRUST_API_KEY`, `BRAINTRUST_PROJECT` | Slack-backend Braintrust tracing (opt-in); interactive sessions use `bt trace enable` instead |
+| `LANGFUSE_PUBLIC_KEY`, `LANGFUSE_SECRET_KEY`, `LANGFUSE_BASE_URL`, `LANGFUSE_USER_ID` | Langfuse tracing (opt-in; keys can also live in `~/.pi/agent/langfuse.json`) |
 | `SLACK_BOT_TOKEN`, `SLACK_APP_TOKEN`, `ZEN_SLACK_*`, `GITHUB_TOKEN` | Slack backend — see [docs/slack.md](docs/slack.md) |
 
 ## Development

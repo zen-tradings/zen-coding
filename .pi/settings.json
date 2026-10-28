@@ -2,7 +2,6 @@
   "defaultProvider": "digitalocean",
   "defaultModel": "glm-5.3-flash",
   "packages": [
-    "npm:@braintrust/pi-extension",
     "npm:@langfuse/pi-observability-plugin",
     "git:github.com/coderabbitai/skills"
   ]

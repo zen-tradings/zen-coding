@@ -67,12 +67,13 @@ the ongoing run rather than queued as a new turn. `/zen plan`, `/zen clarify`, a
 
 ### Tracing
 
-Set `TRACE_TO_BRAINTRUST=true` and `BRAINTRUST_API_KEY` to stream backend sessions to
-Braintrust; `src/slack/tracing.ts` wraps the pi SDK with `wrapPiCodingAgentSDK` so
-SDK-driven sessions are traced. (Interactive sessions are traced separately via
-`bt trace enable pi` — the env vars above are the Slack backend's own opt-in and are not
-read by `@braintrust/pi-extension` >= 2.0.0.) Local JSONL traces
-(`~/.zen/traces/`) are written regardless.
+Set `LANGFUSE_PUBLIC_KEY` and `LANGFUSE_SECRET_KEY` to stream backend sessions to
+Langfuse; `src/slack/agent.ts` loads the `@langfuse/pi-observability-plugin` extension
+(via `additionalExtensionPaths`, since pi SDK sessions never load project pi packages).
+Interactive sessions are traced by the same plugin through normal pi package loading.
+Optionally set `LANGFUSE_BASE_URL`, `LANGFUSE_TRACING_ENVIRONMENT`, and
+`LANGFUSE_USER_ID`; `LANGFUSE_TRACING_ENABLED=false` is the kill switch. Local JSONL
+traces (`~/.zen/traces/`) are written regardless.
 
 ## Configuration reference
 
@@ -89,7 +90,7 @@ All settings are environment variables, read once at startup (`src/slack/config.
 | `ZEN_SLACK_IDLE_MINUTES` | no | `60` | Dispose sessions idle longer than this; they resume on the next message |
 | `ZEN_SLACK_ALLOWED_USERS` | no | everyone | Comma-separated Slack user IDs allowed to use the bot |
 | `GITHUB_TOKEN` / `GH_TOKEN` | no | — | Clone private repositories |
-| `TRACE_TO_BRAINTRUST`, `BRAINTRUST_API_KEY`, `BRAINTRUST_PROJECT` | no | off | Slack-backend Braintrust tracing (interactive sessions use `bt trace enable`) |
+| `LANGFUSE_PUBLIC_KEY`, `LANGFUSE_SECRET_KEY`, `LANGFUSE_BASE_URL`, `LANGFUSE_USER_ID` | no | off | Langfuse tracing for backend sessions |
 
 ## Slack app manifest
 
