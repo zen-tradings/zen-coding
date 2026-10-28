@@ -26,6 +26,9 @@ runs in this repo. See README.md and design.md for the full picture.
   `ZEN_DIGITALOCEAN_REASONING_MODELS` (DeepSeek-style thinking),
   `ZEN_DIGITALOCEAN_CONTEXT_WINDOW`, `ZEN_DIGITALOCEAN_MAX_TOKENS` — see
   `.pi/extensions/zen-models-do.ts`.
+- `ZEN_JEV_SOL` / `ZEN_JEV_TERRA` / `ZEN_JEV_LUNA` — optional overrides for the DigitalOcean
+  model ids used by the `jev/auto` router (`.pi/extensions/jev-router.ts`); defaults are
+  `openai-gpt-5.6-sol/terra/luna`.
 - `EXA_API_KEY` — optional, enables the `exa_search` tool
 - `ALPHAXIV_API_KEY` — for the alphaXiv MCP server
 - `RENDER_API_KEY` — for the Render MCP server
