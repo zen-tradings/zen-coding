@@ -49,6 +49,8 @@ in `package.json`, if you prefer not to install pi globally.
   with `/model` and compare on identical eval tasks.
 - **Research connectors and skills** — alphaXiv, multi-source paper search, GitHub,
   Docker MCP Toolkit, Render, Mintlify via MCP; WorldQuant BRAIN alpha research as a skill.
+- **Process telemetry** — Langfuse session scores for backtest variants tried, work type,
+  and commits; `Langfuse-Session` / `Zen-Work-Type` trailers on agent-made commits.
 - **Observability and evals** — JSONL traces of latency, tokens, and cost per session;
   optional Langfuse tracing; a reproducible eval harness for scoring models on identical tasks.
 
@@ -92,9 +94,10 @@ zen-coding is also a [pi package](https://github.com/earendil-works/pi/blob/main
 pi install git:github.com/zen-tradings/zen-coding
 ```
 
-Guardrails, traces, `/zen` modes, and `exa_search` then load in every
-project. The quant commands, skills, and connectors are project resources — run `pi`
-inside this repository to use them. See [docs/install-anywhere.md](docs/install-anywhere.md).
+Guardrails, traces, `/zen` modes, work-type tags, commit trailers, and `exa_search`
+then load in every project. The quant commands, skills, and connectors are project
+resources — run `pi` inside this repository to use them. See
+[docs/install-anywhere.md](docs/install-anywhere.md).
 
 ## Models
 
@@ -254,8 +257,8 @@ npm run agent         # run the pinned pi version against this repository
 |---|---|
 | `.pi/extensions/` | `guardrails.ts`, `observability.ts`, `modes.ts`, `zen-models-do.ts`, `zen-tools/`, `zen-process/` |
 | `.pi/skills/` | Skills (`wq-alpha-research` is a submodule) |
-| `.pi/mcp.json`, `.pi/guardrails.json`, `.pi/settings.json` | Connector, guardrail, and default-model configuration |
-| `scripts/`, `evals/` | Eval harness and cases |
+| `.pi/mcp.json`, `.pi/guardrails.json`, `.pi/zen-process.json`, `.pi/settings.json` | Connector, guardrail, process-telemetry, and default-model configuration |
+| `scripts/`, `evals/` | Eval harness and cases; `scripts/zen_ledger.py` backtest ledger helper |
 | `docs/`, `design.md` | Deep-dive docs; design notes |
 
 Extensions are TypeScript loaded by pi without a build step; keep them dependency-light.
