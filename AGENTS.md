@@ -34,9 +34,6 @@ runs in this repo. See README.md and design.md for the full picture.
 - `ALPHAXIV_API_KEY` — for the alphaXiv MCP server
 - `RENDER_API_KEY` — for the Render MCP server
 - GitHub MCP auth reuses `gh auth token` (no PAT needed)
-- `WQ_BRAIN_USERNAME` / `WQ_BRAIN_PASSWORD` — WorldQuant BRAIN credentials for the
-  `wq-alpha-research` skill (`.pi/skills/wq-alpha-research`, a git submodule). Its
-  scripts also accept an untracked `credential.txt` (gitignored; never commit it).
 - `LANGFUSE_PUBLIC_KEY` / `LANGFUSE_SECRET_KEY` (+ optional `LANGFUSE_BASE_URL`,
   `LANGFUSE_TRACING_ENVIRONMENT`, `LANGFUSE_USER_ID`) — Langfuse tracing for interactive
   sessions (via the `@langfuse/pi-observability-plugin` project pi package). Keys can also live in
@@ -67,8 +64,7 @@ runs in this repo. See README.md and design.md for the full picture.
 - `.pi/extensions/` — guardrails, observability (JSONL traces → `~/.zen/traces/`),
   `/zen normal|clarify|plan` modes and `/zen type`, zen-process (session scores, commit
   trailers), model registration (DigitalOcean, `zen-models-do.ts`), zen-tools
-- `.pi/skills/` — shared skills (`wq-alpha-research` is a git submodule;
-  clone with `git submodule update --init`)
+- `.pi/skills/` — shared skills (`langfuse`, `mintlify-docs`)
 - `evals/`, `scripts/` — eval harness (`run_eval.py`, `aggregate.py`) and case definitions
 - `docs/` — deep-dive docs (process telemetry, MCP connectors, install-anywhere, evals);
   README.md is the user-facing front page — keep reference detail in `docs/`

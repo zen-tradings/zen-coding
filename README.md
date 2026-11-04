@@ -7,9 +7,7 @@ an open-source coding-agent harness: pi provides the agent loop, terminal UI, se
 and model providers; zen-coding adds extensions, skills, and MCP configuration that pi
 discovers when you run it in this repository. The command you run is `pi`.
 
-For quant work it ships the `wq-alpha-research` skill — WorldQuant BRAIN US-equity alpha
-research end to end (fields → expressions → backtests → checks → submission →
-portfolios) — and research connectors for paper discovery and full-text search
+For quant work it ships research connectors for paper discovery and full-text search
 (alphaXiv, arXiv, SSRN, …). Backtests run in a session are tracked automatically
 (variants tried, seeds) as Langfuse session scores, agent-made commits carry
 `Langfuse-Session` / `Zen-Work-Type` trailers, and traces carry evidence fields (sources,
@@ -28,7 +26,6 @@ npm install -g --ignore-scripts @earendil-works/pi-coding-agent   # or: curl -fs
 # 2. Get zen-coding
 git clone https://github.com/zen-tradings/zen-coding.git
 cd zen-coding
-git submodule update --init   # optional: wq-alpha-research skill
 npm install                   # extension dependencies
 
 # 3. Set a provider key (default model is glm-5.3-flash on DigitalOcean GenAI; Fireworks, Anthropic and OpenAI also supported — switch with /model)
@@ -145,10 +142,6 @@ Details and how to add your own: [docs/mcp-connectors.md](docs/mcp-connectors.md
 
 ## Skills
 
-- [`wq-alpha-research`](https://github.com/zen-tradings/wq-alpha-research) — WorldQuant
-  BRAIN US-equity alpha research: expressions, field selection, simulation diagnostics,
-  Sharpe/fitness/turnover tuning, correlation management, submission. Git submodule;
-  credentials via `WQ_BRAIN_USERNAME` / `WQ_BRAIN_PASSWORD`.
 - `mintlify-docs` — write, build, validate, and deploy Mintlify documentation sites.
 
 ## Safety and guardrails
@@ -243,7 +236,6 @@ produces a `benchmark.json` with per-track pass rates and regressions. Guide:
 | `FIREWORKS_API_KEY`, `ANTHROPIC_API_KEY`, `OPENAI_API_KEY` | Model provider keys (at least one) |
 | `EXA_API_KEY` | Enables the `exa_search` tool (web, code, paper search) |
 | `ALPHAXIV_API_KEY`, `RENDER_API_KEY` | MCP connector credentials |
-| `WQ_BRAIN_USERNAME`, `WQ_BRAIN_PASSWORD` | WorldQuant BRAIN credentials (`wq-alpha-research`) |
 | `ZEN_TRACE_DIR`, `ZEN_GUARDRAILS_CONFIG` | Trace directory; alternate guardrail rules file |
 | `LANGFUSE_PUBLIC_KEY`, `LANGFUSE_SECRET_KEY`, `LANGFUSE_BASE_URL`, `LANGFUSE_USER_ID` | Langfuse tracing (opt-in; keys can also live in `~/.pi/agent/langfuse.json`) |
 | `ZEN_WORK_TYPE` | Default session work type (below `/zen type`, above `zen.config.json`) |
@@ -262,7 +254,7 @@ npm run agent         # run the pinned pi version against this repository
 | Path | Contents |
 |---|---|
 | `.pi/extensions/` | `guardrails.ts`, `observability.ts`, `modes.ts`, `zen-models-do.ts`, `zen-tools/`, `zen-process/` |
-| `.pi/skills/` | Skills (`wq-alpha-research` is a submodule) |
+| `.pi/skills/` | Skills |
 | `.pi/mcp.json`, `.pi/guardrails.json`, `.pi/zen-process.json`, `.pi/settings.json` | Connector, guardrail, process-telemetry, and default-model configuration |
 | `scripts/`, `evals/` | Eval harness and cases; `scripts/zen_ledger.py` backtest ledger helper |
 | `docs/`, `design.md` | Deep-dive docs; design notes |
