@@ -178,6 +178,21 @@ Every tool call passes through `guardrails.ts` before it executes. Rules in
   `--force-with-lease`), `git reset --hard`.
 - **Protected paths** — `.env*`, `*.pem`, `*.key`, `.git/`, `.zen/`, and the rules file
   itself.
+- **Secret hygiene.** Tool inputs and outputs are uploaded to Langfuse, and the plugin
+  redacts only Langfuse keys; there is no masking hook. So the agent is kept from putting
+  secrets in tool output in the first place:
+  - `denyReadPaths` stops `read`/`grep` on credential files: `.env*`, `*.env`, keys,
+    `~/.pi/agent/{langfuse,auth}.json`, and similar. `allowReadPaths` exempts templates
+    such as `.env.example`.
+  - `denySecretBashPatterns` blocks commands that dump secrets: bare `env`/`printenv`,
+    `cat`/`grep`/`head` of env and key files, and `echo`/`printf` of `$*_KEY`/`*_TOKEN`/
+    `*_SECRET` variables.
+  - Sourcing an env file into a command (`set -a; . envs/x.env; set +a; python …`) is
+    still allowed.
+  - Defaults live in `guardrails.ts`. Set any of these fields in `.pi/guardrails.json`
+    to replace the defaults.
+  - A program that prints a secret itself, for example `python -c 'print(os.environ[…])'`,
+    is **not** caught.
 - **No writes outside the project root.**
 
 A repository can add rules in its own `.pi/guardrails.json`; they merge *tighten-only*.
