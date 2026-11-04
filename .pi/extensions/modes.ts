@@ -7,11 +7,16 @@
  *
  * The mode applies per session and resets to normal on restart.
  *
+ * `/zen type <research|conversion|ops|platform>` sets the session's work type
+ * instead (persisted in the session, so it survives restart/resume); `/zen type`
+ * shows the current value. See zen-process/work-type.ts.
+ *
  * The mode instructions go into a structured system-prompt section rather than
  * a replacement prompt, so pi records a transcript delta when the mode changes
  * and keeps the cached prompt prefix (pi >= 0.86 mid-conversation system messages).
  */
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
+import { isWorkType, resolveWorkType, WORK_TYPE_ENTRY, WORK_TYPES } from "./zen-process/work-type";
 
 type ZenMode = "normal" | "clarify" | "plan";
 
@@ -42,15 +47,37 @@ export default function (pi: ExtensionAPI) {
   let mode: ZenMode = "normal";
 
   pi.registerCommand("zen", {
-    description: "Switch zen-coding mode (normal | clarify | plan)",
+    description: "Switch zen-coding mode (normal | clarify | plan), or set the work type: /zen type <value>",
     getArgumentCompletions: (prefix: string) => {
-      const items = MODES.filter((m) => m.startsWith(prefix)).map((m) => ({
+      if (prefix.startsWith("type ")) {
+        const rest = prefix.slice(5).trim();
+        const types = WORK_TYPES.filter((t) => t.startsWith(rest)).map((t) => ({ value: `type ${t}`, label: t }));
+        return types.length > 0 ? types : null;
+      }
+      const items = [...MODES, "type"].filter((m) => m.startsWith(prefix)).map((m) => ({
         value: m,
         label: m,
       }));
       return items.length > 0 ? items : null;
     },
     handler: async (args, ctx) => {
+      const [sub, value, ...extra] = (args ?? "").trim().split(/\s+/);
+      if (sub === "type") {
+        const current = resolveWorkType(ctx);
+        if (!value) {
+          ctx.ui.notify(`zen work type: ${current.workType} (from ${current.source})`, "info");
+          return;
+        }
+        const requestedType = value.toLowerCase();
+        if (extra.length > 0 || !isWorkType(requestedType)) {
+          ctx.ui.notify(`Usage: /zen type <${WORK_TYPES.join(" | ")}> — current: ${current.workType}`, "warning");
+          return;
+        }
+        pi.appendEntry(WORK_TYPE_ENTRY, { workType: requestedType });
+        pi.events.emit("zen:work-type", requestedType);
+        ctx.ui.notify(`zen work type: ${requestedType}`, "info");
+        return;
+      }
       const requested = (args ?? "").trim() as ZenMode;
       if (!MODES.includes(requested)) {
         ctx.ui.notify(`Usage: /zen <${MODES.join(" | ")}> — current: ${mode}`, "warning");

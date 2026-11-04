@@ -1,0 +1,8 @@
+{
+  "//": "Fallback backtest detection for repos without scripts/zen_ledger.py. Regexes matched against each bash command; ZEN_BACKTEST_PATTERNS replaces this list. Only interpreter invocations count, so cat/grep/git add of a backtest file do not.",
+  "backtestPatterns": [
+    "\\bpython[0-9.]*\\s+(?:-\\S+\\s+)*\\S*\\brun\\.py\\b[^\\n;&|]*\\bbacktest\\b",
+    "\\b(?:python[0-9.]*|uv\\s+run|poetry\\s+run|pipenv\\s+run)\\s+(?:-\\S+\\s+)*\\S*(?:\\bbacktests?/[\\w./-]+\\.py|[\\w-]*backtest[\\w-]*\\.py)\\b",
+    "\\b(?:zipline\\s+run|lean\\s+backtest|freqtrade\\s+backtesting)\\b"
+  ]
+}

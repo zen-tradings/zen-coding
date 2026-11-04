@@ -80,7 +80,45 @@ def isolated_pi_env(cdir: Path) -> dict:
             shutil.copy2(f, pi_home / name)
     env = dict(os.environ)
     env["PI_CODING_AGENT_DIR"] = str(pi_home)
+    env.update(langfuse_env(src))
+    # An eval launched from inside a pi session must not nest its traces under
+    # that session as a "subagent" (the plugin reads these to link children).
+    for var in ("LANGFUSE_PI_PARENT_TRACE_ID", "LANGFUSE_PI_PARENT_SPAN_ID",
+                "LANGFUSE_PI_PARENT_SESSION_ID", "LANGFUSE_PI_PARENT_DEPTH", "ZEN_SESSION_ID"):
+        env.pop(var, None)
     return env
+
+
+# langfuse.json key -> env var. The isolated pi home has no langfuse.json, so the
+# Langfuse plugin (auto-installed there from settings.json) would run untraced;
+# export the credentials instead. Values already in the environment win, like
+# the plugin's own precedence (env > file).
+LANGFUSE_FILE_KEYS = {
+    "publicKey": "LANGFUSE_PUBLIC_KEY",
+    "secretKey": "LANGFUSE_SECRET_KEY",
+    "baseUrl": "LANGFUSE_BASE_URL",
+    "userId": "LANGFUSE_USER_ID",
+    "release": "LANGFUSE_RELEASE",
+}
+
+
+def langfuse_env(pi_config_dir: Path) -> dict:
+    """Env vars that trace eval runs to Langfuse under environment "experiment".
+
+    The entry-point environment always wins over langfuse.json and the caller's
+    LANGFUSE_TRACING_ENVIRONMENT. LANGFUSE_TRACING_ENABLED=false stays honored
+    (it is passed through unchanged and the plugin checks it first).
+    """
+    out = {"LANGFUSE_TRACING_ENVIRONMENT": "experiment"}
+    try:
+        cfg = json.loads((pi_config_dir / "langfuse.json").read_text())
+    except (OSError, ValueError):
+        cfg = {}
+    for key, var in LANGFUSE_FILE_KEYS.items():
+        value = cfg.get(key)
+        if not os.environ.get(var) and isinstance(value, str) and value.strip():
+            out[var] = value.strip()
+    return out
 
 
 def run_agent(prompt: str, cwd: Path, timeout_s: int, agent_args: list[str], log: Path, env: dict) -> dict:

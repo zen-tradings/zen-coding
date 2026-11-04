@@ -67,6 +67,12 @@ in `package.json`, if you prefer not to install pi globally.
 | `clarify` | Ask concise clarifying questions first when the request is ambiguous. |
 | `plan` | Read-only. Explore, produce a step-by-step plan, stop. Edits are blocked. |
 
+**Work type** — `/zen type <research | conversion | ops | platform>` tags the session
+(Langfuse score `process.work_type`, commit trailer `Zen-Work-Type`); `/zen type` shows
+the current value. It is stored in the session, so it survives a restart or resume.
+Fallbacks, in order: `ZEN_WORK_TYPE`, the target repo's `zen.config.json`
+(`{"workType": "research"}`, nearest file up to the git root), then `unknown`.
+
 **Skills** load automatically when a task matches, or on demand with `/skill:<name>`.
 
 ### Headless
@@ -186,6 +192,30 @@ stream sessions to [Langfuse](https://langfuse.com), set `LANGFUSE_PUBLIC_KEY` a
 `LANGFUSE_USER_ID`); this covers both interactive sessions (via the
 `@langfuse/pi-observability-plugin` project pi package) and Slack-backend sessions (the
 same plugin, wired in `src/slack/agent.ts`). `LANGFUSE_TRACING_ENABLED=false` disables it.
+The trace environment is set per entry point and wins over `langfuse.json`:
+`development` (`npm run agent`), `slack` (`npm run slack`), `experiment`
+(`scripts/run_eval.py`, which also exports the Langfuse credentials into its isolated
+pi home). Plain `pi` uses whatever `LANGFUSE_TRACING_ENVIRONMENT` / `langfuse.json` say.
+
+**Process telemetry** (`.pi/extensions/zen-process/`) adds three Langfuse *session*
+scores, with idempotent ids `<sessionId>-<name>` so updates replace rather than duplicate:
+
+- `process.variants_tried` (numeric) — distinct backtest variants this session, from a
+  local ledger (`~/.zen/ledger/<sessionId>.jsonl`). Backtest entry points add one line
+  that calls `scripts/zen_ledger.py` (code state + config contents + args, seeds
+  excluded); total runs and per-variant seeds are in the score metadata. Repos without
+  the helper fall back to matching bash commands (`.pi/zen-process.json`,
+  `ZEN_BACKTEST_PATTERNS`) and are marked `source: "bash-heuristic"`.
+- `process.work_type` (categorical) — see **Work type** above.
+- `process.commits` (text) — `repo@sha` of every commit the agent made in the session.
+
+**Commit trailers** — the agent's own `git commit` commands get
+`Langfuse-Session: <sessionId>` and `Zen-Work-Type: <type>` (via `git commit --trailer`,
+git >= 2.32; no hooks are installed). Commits you make yourself, and commits made by
+scripts the agent runs, are not touched. Every agent bash command also sees
+`ZEN_SESSION_ID`. Telemetry fails open: with Langfuse unreachable or tracing off, no
+scores are sent but trailers and the ledger still work; errors go to
+`~/.zen/telemetry.log`. Details and edge cases: [docs/process-telemetry.md](docs/process-telemetry.md).
 
 ### Evidence trace fields
 
@@ -219,18 +249,23 @@ produces a `benchmark.json` with per-track pass rates and regressions. Guide:
 | `WQ_BRAIN_USERNAME`, `WQ_BRAIN_PASSWORD` | WorldQuant BRAIN credentials (`wq-alpha-research`) |
 | `ZEN_TRACE_DIR`, `ZEN_GUARDRAILS_CONFIG` | Trace directory; alternate guardrail rules file |
 | `LANGFUSE_PUBLIC_KEY`, `LANGFUSE_SECRET_KEY`, `LANGFUSE_BASE_URL`, `LANGFUSE_USER_ID` | Langfuse tracing (opt-in; keys can also live in `~/.pi/agent/langfuse.json`) |
+| `ZEN_WORK_TYPE` | Default session work type (below `/zen type`, above `zen.config.json`) |
+| `ZEN_BACKTEST_PATTERNS` | Regexes (JSON array or one per line) replacing the fallback backtest patterns in `.pi/zen-process.json` |
+| `ZEN_LEDGER_DIR`, `ZEN_TELEMETRY_DEBUG` | Backtest ledger directory (default `~/.zen/ledger`); `1` = also print telemetry errors to stderr |
+| `ZEN_SESSION_ID`, `ZEN_LEDGER_PY` | Set *by* zen-coding in every agent bash command (session id; path of `scripts/zen_ledger.py`) |
 | `SLACK_BOT_TOKEN`, `SLACK_APP_TOKEN`, `ZEN_SLACK_*`, `GITHUB_TOKEN` | Slack backend — see [docs/slack.md](docs/slack.md) |
 
 ## Development
 
 ```bash
 npm run typecheck     # tsc --noEmit over extensions and Slack backend — run after any TS change
+npm test              # unit tests (test/*.test.ts, via tsx)
 npm run agent         # run the pinned pi version against this repository
 ```
 
 | Path | Contents |
 |---|---|
-| `.pi/extensions/` | `guardrails.ts`, `observability.ts`, `modes.ts`, `zen-models-do.ts`, `zen-tools/` |
+| `.pi/extensions/` | `guardrails.ts`, `observability.ts`, `modes.ts`, `zen-models-do.ts`, `zen-tools/`, `zen-process/` |
 | `.pi/skills/` | Skills (`wq-alpha-research` is a submodule) |
 | `.pi/mcp.json`, `.pi/guardrails.json`, `.pi/settings.json` | Connector, guardrail, and default-model configuration |
 | `src/slack/` | Slack backend (pi SDK) |

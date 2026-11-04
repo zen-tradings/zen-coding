@@ -13,9 +13,10 @@
     ]
   },
   "scripts": {
-    "agent": "pi",
+    "agent": "LANGFUSE_TRACING_ENVIRONMENT=development pi",
     "slack": "tsx src/slack/index.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "tsx --test test/*.test.ts"
   },
   "engines": {
     "node": ">=22"

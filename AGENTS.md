@@ -11,6 +11,7 @@ runs in this repo. See README.md and design.md for the full picture.
   does the same with the pi version pinned in `package.json`
 - `npm run typecheck` — type-check the TS extensions (`tsc --noEmit`); run this after
   editing anything in `.pi/extensions/` or `src/`
+- `npm test` — unit tests (`test/*.test.ts` via tsx)
 - `npm run slack` — start the Slack backend (Slack threads ↔ pi sessions)
 - Headless: `pi -p "..."`, `pi --mode json -p "..."`, `pi --mode rpc` — non-interactive
   modes skip the trust prompt, so pass `-a` (or trust the project once interactively)
@@ -42,6 +43,12 @@ runs in this repo. See README.md and design.md for the full picture.
   sessions (via the `@langfuse/pi-observability-plugin` project pi package) and Slack-backend
   SDK sessions (same plugin, wired in `src/slack/agent.ts`). Keys can also live in
   `~/.pi/agent/langfuse.json`; `LANGFUSE_TRACING_ENABLED=false` is the kill switch.
+  The trace environment is pinned per entry point: `development` (`npm run agent`),
+  `slack` (`src/slack/index.ts`), `experiment` (`scripts/run_eval.py`).
+- `ZEN_WORK_TYPE`, `ZEN_BACKTEST_PATTERNS`, `ZEN_LEDGER_DIR`, `ZEN_TELEMETRY_DEBUG` —
+  process telemetry (`.pi/extensions/zen-process/`, docs/process-telemetry.md). The
+  extension sets `ZEN_SESSION_ID` / `ZEN_LEDGER_PY` in every agent bash command and adds
+  `Langfuse-Session` / `Zen-Work-Type` trailers to the agent's own `git commit` calls.
 
 ## Conventions
 
@@ -61,7 +68,8 @@ runs in this repo. See README.md and design.md for the full picture.
 ## Project layout
 
 - `.pi/extensions/` — guardrails, observability (JSONL traces → `~/.zen/traces/`),
-  `/zen normal|clarify|plan` modes, model registration (DigitalOcean, `zen-models-do.ts`), zen-tools
+  `/zen normal|clarify|plan` modes and `/zen type`, zen-process (session scores, commit
+  trailers), model registration (DigitalOcean, `zen-models-do.ts`), zen-tools
 - `.pi/skills/` — shared skills (`wq-alpha-research` is a git submodule;
   clone with `git submodule update --init`)
 - `src/slack/` — Slack backend (pi SDK)

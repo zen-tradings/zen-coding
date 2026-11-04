@@ -13,6 +13,10 @@ import { registerHandlers } from "./app";
 import { loadConfig } from "./config";
 import { ThreadRegistry } from "./threads";
 
+// Entry-point Langfuse environment: wins over ~/.pi/agent/langfuse.json and any
+// inherited value (the plugin reads env before the file, at session creation).
+process.env.LANGFUSE_TRACING_ENVIRONMENT = "slack";
+
 const config = loadConfig();
 const modelRuntime = await ModelRuntime.create();
 
