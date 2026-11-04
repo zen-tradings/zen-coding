@@ -10,9 +10,8 @@ runs in this repo. See README.md and design.md for the full picture.
 - `pi` (run in the repo root) — launch the pi TUI with zen extensions; `npm run agent`
   does the same with the pi version pinned in `package.json`
 - `npm run typecheck` — type-check the TS extensions (`tsc --noEmit`); run this after
-  editing anything in `.pi/extensions/` or `src/`
+  editing anything in `.pi/extensions/`
 - `npm test` — unit tests (`test/*.test.ts` via tsx)
-- `npm run slack` — start the Slack backend (Slack threads ↔ pi sessions)
 - Headless: `pi -p "..."`, `pi --mode json -p "..."`, `pi --mode rpc` — non-interactive
   modes skip the trust prompt, so pass `-a` (or trust the project once interactively)
   for the zen extensions to load
@@ -39,12 +38,11 @@ runs in this repo. See README.md and design.md for the full picture.
   `wq-alpha-research` skill (`.pi/skills/wq-alpha-research`, a git submodule). Its
   scripts also accept an untracked `credential.txt` (gitignored; never commit it).
 - `LANGFUSE_PUBLIC_KEY` / `LANGFUSE_SECRET_KEY` (+ optional `LANGFUSE_BASE_URL`,
-  `LANGFUSE_TRACING_ENVIRONMENT`, `LANGFUSE_USER_ID`) — Langfuse tracing for both interactive
-  sessions (via the `@langfuse/pi-observability-plugin` project pi package) and Slack-backend
-  SDK sessions (same plugin, wired in `src/slack/agent.ts`). Keys can also live in
+  `LANGFUSE_TRACING_ENVIRONMENT`, `LANGFUSE_USER_ID`) — Langfuse tracing for interactive
+  sessions (via the `@langfuse/pi-observability-plugin` project pi package). Keys can also live in
   `~/.pi/agent/langfuse.json`; `LANGFUSE_TRACING_ENABLED=false` is the kill switch.
   The trace environment is pinned per entry point: `development` (`npm run agent`),
-  `slack` (`src/slack/index.ts`), `experiment` (`scripts/run_eval.py`).
+  `experiment` (`scripts/run_eval.py`).
 - `ZEN_WORK_TYPE`, `ZEN_BACKTEST_PATTERNS`, `ZEN_LEDGER_DIR`, `ZEN_TELEMETRY_DEBUG` —
   process telemetry (`.pi/extensions/zen-process/`, docs/process-telemetry.md). The
   extension sets `ZEN_SESSION_ID` / `ZEN_LEDGER_PY` in every agent bash command and adds
@@ -56,8 +54,7 @@ runs in this repo. See README.md and design.md for the full picture.
   `npm run typecheck` must pass.
 - Guardrails (denied bash patterns, protected paths) are enforced by
   `.pi/extensions/guardrails.ts` from `.pi/guardrails.json` — do not bypass them.
-- `.zen/` is runtime state (Slack backend thread map and checkouts); never write to or
-  read from it as a source of truth, and never commit it. Telemetry traces go to
+- `.zen/` is runtime state; never commit it. Telemetry traces go to
   `~/.zen/traces/` (override: `ZEN_TRACE_DIR`), outside the repo.
 - `.pi/npm/` is machine-local (installed packages) — never commit.
 - MCP servers are configured in `.pi/mcp.json` at the repo root and loaded by pi's
@@ -72,8 +69,7 @@ runs in this repo. See README.md and design.md for the full picture.
   trailers), model registration (DigitalOcean, `zen-models-do.ts`), zen-tools
 - `.pi/skills/` — shared skills (`wq-alpha-research` is a git submodule;
   clone with `git submodule update --init`)
-- `src/slack/` — Slack backend (pi SDK)
 - `evals/`, `scripts/` — eval harness (`run_eval.py`, `aggregate.py`) and case definitions
-- `docs/` — deep-dive docs (Slack internals, MCP connectors, install-anywhere, evals);
+- `docs/` — deep-dive docs (process telemetry, MCP connectors, install-anywhere, evals);
   README.md is the user-facing front page — keep reference detail in `docs/`
 - `design.md` — architecture and roadmap

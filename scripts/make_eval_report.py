@@ -80,8 +80,8 @@ y = para(fig, y, "Project in one sentence", bold=True, size=11)
 y -= 0.004
 y = para(fig, y, "zen-coding is a quant coding agent built as a thin, opinionated layer on the open-source "
                  "agent harness pi (MIT). The harness is a pinned npm dependency; everything domain-specific "
-                 "lives in TypeScript extensions (guardrails, observability, modes, model registry, tools), "
-                 "a Python eval harness (scripts/run_eval.py + aggregate.py), and a Slack backend on the pi SDK.")
+                 "lives in TypeScript extensions (guardrails, observability, modes, model registry, tools) and "
+                 "a Python eval harness (scripts/run_eval.py + aggregate.py).")
 y -= 0.012
 
 y = para(fig, y, "Headline results", bold=True, size=11)

@@ -37,7 +37,7 @@
       },
       {
         "group": "Coding Agent",
-        "pages": ["install-anywhere", "mcp-connectors", "slack", "evals"]
+        "pages": ["install-anywhere", "mcp-connectors", "evals"]
       },
       {
         "group": "Fundamental Agent",

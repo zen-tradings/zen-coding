@@ -14,7 +14,6 @@
   },
   "scripts": {
     "agent": "LANGFUSE_TRACING_ENVIRONMENT=development pi",
-    "slack": "tsx src/slack/index.ts",
     "typecheck": "tsc --noEmit",
     "test": "tsx --test test/*.test.ts"
   },
@@ -22,8 +21,6 @@
     "node": ">=22"
   },
   "dependencies": {
-    "@slack/bolt": "^5.0.0",
-    "@slack/web-api": "^8.0.0",
     "minimatch": "^10.2.5"
   },
   "peerDependencies": {

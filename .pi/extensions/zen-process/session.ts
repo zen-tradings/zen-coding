@@ -7,7 +7,7 @@
  * i.e. from the launch environment — and never again. The plugin rewrites
  * those variables process-wide during every turn, so reading them later (as the
  * plugin does at each session's factory time) can pick up another in-process
- * session's turn; in the Slack backend that would stamp the wrong session.
+ * session's turn when one process hosts several sessions.
  */
 import type { ExtensionContext } from "@earendil-works/pi-coding-agent";
 

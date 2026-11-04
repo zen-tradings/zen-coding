@@ -10,7 +10,7 @@ For a pi process launched by another pi turn (a subagent), it is the parent's se
 from `LANGFUSE_PI_PARENT_SESSION_ID`. zen-coding reads that variable once, from the
 **launch environment** (first module load). The plugin rewrites the `LANGFUSE_PI_PARENT_*`
 variables process-wide on every turn, so reading them later (as the plugin does) can pick
-up another session's turn in the multi-session Slack backend. Every agent bash command
+up another session's turn when one process hosts several sessions. Every agent bash command
 gets the result as `ZEN_SESSION_ID`.
 
 ## Session scores

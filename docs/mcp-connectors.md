@@ -130,4 +130,4 @@ Add an entry to `.pi/mcp.json` (same format as Claude Code and Cursor):
 Run `pi mcp list` to validate, then `/reload` in a running session.
 
 Connectors are configured per repository: the file in *this* repository is the one
-that applies, including for repositories checked out by the Slack backend.
+that applies.

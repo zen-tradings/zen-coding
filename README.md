@@ -2,7 +2,7 @@
 
 **A coding agent for quantitative research and development.**
 
-zen-coding is a terminal and Slack coding agent with quant workflows built in — alpha
+zen-coding is a terminal coding agent with quant workflows built in — alpha
 research, beta audits, portfolio construction, backtest review, paper replication — and
 guardrails against the mistakes that quietly ruin research code.
 
@@ -49,8 +49,6 @@ in `package.json`, if you prefer not to install pi globally.
   with `/model` and compare on identical eval tasks.
 - **Research connectors and skills** — alphaXiv, multi-source paper search, GitHub,
   Docker MCP Toolkit, Render, Mintlify via MCP; WorldQuant BRAIN alpha research as a skill.
-- **Slack bot** — @-mention with a GitHub link; the agent clones the repo and streams
-  its reply into the thread.
 - **Observability and evals** — JSONL traces of latency, tokens, and cost per session;
   optional Langfuse tracing; a reproducible eval harness for scoring models on identical tasks.
 
@@ -118,31 +116,6 @@ The project default lives in `.pi/settings.json` (`defaultProvider` / `defaultMo
 Comparing models on cost, latency, and pass rate is a matter of re-running the
 [eval harness](docs/evals.md) with `--model`.
 
-## Slack bot
-
-@-mention the bot in a channel — optionally with a GitHub link — or DM it. It works in a
-backend session and streams its reply into the thread; follow-up messages steer the
-running task, and `/zen` modes work from Slack.
-
-Create the app at <https://api.slack.com/apps> → *Create New App* → *From a manifest*:
-
-1. Paste [`slack-app-manifest.yaml`](slack-app-manifest.yaml) (scopes, events, and
-   Socket Mode pre-configured).
-2. *Basic Information → App-Level Tokens*: generate a token with `connections:write` →
-   `SLACK_APP_TOKEN` (`xapp-…`).
-3. *Install App → Install to Workspace*: copy the Bot User OAuth Token →
-   `SLACK_BOT_TOKEN` (`xoxb-…`).
-4. Invite the bot to a channel (`/invite @zen-coding`).
-
-```bash
-export SLACK_BOT_TOKEN=xoxb-... SLACK_APP_TOKEN=xapp-...
-export GITHUB_TOKEN=...            # optional: private repositories
-npm run slack
-```
-
-Each thread gets its own persistent session and repository checkout; a cloned
-repository's extensions never execute. Architecture and all options: [docs/slack.md](docs/slack.md).
-
 ## Research connectors
 
 External tools connect through pi's built-in MCP support. Their tools stay out of the
@@ -205,10 +178,10 @@ Every session writes a JSONL trace to `~/.zen/traces/<sessionId>.jsonl` (overrid
 stream sessions to [Langfuse](https://langfuse.com), set `LANGFUSE_PUBLIC_KEY` and
 `LANGFUSE_SECRET_KEY` (optionally `LANGFUSE_BASE_URL`, `LANGFUSE_TRACING_ENVIRONMENT`,
 `LANGFUSE_USER_ID`); this covers both interactive sessions (via the
-`@langfuse/pi-observability-plugin` project pi package) and Slack-backend sessions (the
-same plugin, wired in `src/slack/agent.ts`). `LANGFUSE_TRACING_ENABLED=false` disables it.
+`@langfuse/pi-observability-plugin` project pi package). `LANGFUSE_TRACING_ENABLED=false`
+disables it.
 The trace environment is set per entry point and wins over `langfuse.json`:
-`development` (`npm run agent`), `slack` (`npm run slack`), `experiment`
+`development` (`npm run agent`) and `experiment`
 (`scripts/run_eval.py`, which also exports the Langfuse credentials into its isolated
 pi home). Plain `pi` uses whatever `LANGFUSE_TRACING_ENVIRONMENT` / `langfuse.json` say.
 
@@ -268,12 +241,11 @@ produces a `benchmark.json` with per-track pass rates and regressions. Guide:
 | `ZEN_BACKTEST_PATTERNS` | Regexes (JSON array or one per line) replacing the fallback backtest patterns in `.pi/zen-process.json` |
 | `ZEN_LEDGER_DIR`, `ZEN_TELEMETRY_DEBUG` | Backtest ledger directory (default `~/.zen/ledger`); `1` = also print telemetry errors to stderr |
 | `ZEN_SESSION_ID`, `ZEN_LEDGER_PY` | Set *by* zen-coding in every agent bash command (session id; path of `scripts/zen_ledger.py`) |
-| `SLACK_BOT_TOKEN`, `SLACK_APP_TOKEN`, `ZEN_SLACK_*`, `GITHUB_TOKEN` | Slack backend — see [docs/slack.md](docs/slack.md) |
 
 ## Development
 
 ```bash
-npm run typecheck     # tsc --noEmit over extensions and Slack backend — run after any TS change
+npm run typecheck     # tsc --noEmit over the extensions — run after any TS change
 npm test              # unit tests (test/*.test.ts, via tsx)
 npm run agent         # run the pinned pi version against this repository
 ```
@@ -283,7 +255,6 @@ npm run agent         # run the pinned pi version against this repository
 | `.pi/extensions/` | `guardrails.ts`, `observability.ts`, `modes.ts`, `zen-models-do.ts`, `zen-tools/`, `zen-process/` |
 | `.pi/skills/` | Skills (`wq-alpha-research` is a submodule) |
 | `.pi/mcp.json`, `.pi/guardrails.json`, `.pi/settings.json` | Connector, guardrail, and default-model configuration |
-| `src/slack/` | Slack backend (pi SDK) |
 | `scripts/`, `evals/` | Eval harness and cases |
 | `docs/`, `design.md` | Deep-dive docs; design notes |
 
