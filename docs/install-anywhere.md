@@ -41,8 +41,10 @@ only** — `.pi/extensions/`:
 |---|---|
 | `guardrails.ts` | Denied shell patterns, protected paths, no writes outside the project |
 | `observability.ts` | JSONL traces of latency, tokens, and cost per session |
-| `modes.ts` | `/zen` modes: `normal`, `clarify`, `plan` |
+| `modes.ts` | `/zen` modes: `normal`, `clarify`, `plan`; `/zen type` work-type tags |
+| `zen-models-do.ts` | DigitalOcean GenAI provider (needs `ZEN_DIGITALOCEAN_API_KEY`) |
 | `zen-tools/` | `exa_search` (needs `EXA_API_KEY`) |
+| `zen-process/` | Session scores (`process.variants_tried`, `process.work_type`, `process.commits`), `ZEN_SESSION_ID`, commit trailers — see [process-telemetry.md](process-telemetry.md) |
 
 The skills (`.pi/skills/`) and MCP connectors
 (`.pi/mcp.json`) are *project* resources: pi discovers them when you run it inside the

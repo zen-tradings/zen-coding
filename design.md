@@ -2,8 +2,8 @@
 criteria of choosing agent harness framework
 
 # User Interaction
-## 1.TUI Based
-2.1 The interaction mode like Claude Code
+## 1. TUI Based
+1.1 The interaction mode like Claude Code
 
 # Use Cases:
 - Maintenance of large code based

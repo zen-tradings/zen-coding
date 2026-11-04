@@ -78,7 +78,7 @@ Fallbacks, in order: `ZEN_WORK_TYPE`, the target repo's `zen.config.json`
 ### Headless
 
 ```bash
-pi -p "explain src/foo.py"            # one-shot
+pi -p "explain how guardrails.ts works"  # one-shot
 pi --mode json -p "..."               # streamed JSON events
 pi --mode rpc                         # JSON protocol over stdin/stdout
 ```
