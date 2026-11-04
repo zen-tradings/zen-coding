@@ -2,14 +2,20 @@
 
 **A coding agent for quantitative research and development.**
 
-zen-coding is a terminal coding agent with quant workflows built in — alpha
-research, beta audits, portfolio construction, backtest review, paper replication — and
-guardrails against the mistakes that quietly ruin research code.
+zen-coding is a terminal coding agent built on top of [pi](https://github.com/earendil-works/pi),
+an open-source coding-agent harness: pi provides the agent loop, terminal UI, sessions,
+and model providers; zen-coding adds extensions, skills, and MCP configuration that pi
+discovers when you run it in this repository. The command you run is `pi`.
 
-It is a layer on top of [pi](https://github.com/earendil-works/pi), an open-source
-coding-agent harness: pi provides the agent loop, terminal UI, sessions, and model
-providers; zen-coding adds extensions, skills, and MCP configuration
-that pi discovers when you run it in this repository. The command you run is `pi`.
+For quant work it ships the `wq-alpha-research` skill — WorldQuant BRAIN US-equity alpha
+research end to end (fields → expressions → backtests → checks → submission →
+portfolios) — and research connectors for paper discovery and full-text search
+(alphaXiv, arXiv, SSRN, …). Backtests run in a session are tracked automatically
+(variants tried, seeds) as Langfuse session scores, agent-made commits carry
+`Langfuse-Session` / `Zen-Work-Type` trailers, and traces carry evidence fields (sources,
+checks, errors) so research steps can be audited later. Guardrails enforce tool-boundary
+safety (destructive commands, secrets, protected paths); research-quality verifiers —
+beta audits, portfolio-construction checks — are on the roadmap ([design.md](design.md)).
 
 ## Quick start
 
