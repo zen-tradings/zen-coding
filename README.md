@@ -32,9 +32,18 @@ npm install                   # extension dependencies
 export ZEN_DIGITALOCEAN_API_KEY=...        # DO GenAI Model Access Key
 #export FIREWORKS_API_KEY=...              # alternative low-cost provider (Kimi K3)
 
-# 4. Run pi inside the repository
+# 4. (Recommended) Install the code-graph binary used by the pi-cbm package
+curl -fsSL https://raw.githubusercontent.com/DeusData/codebase-memory-mcp/main/install.sh | bash -s -- --skip-config
+
+# 5. Run pi inside the repository
 pi
 ```
+
+The project's `.pi/settings.json` pulls in `npm:pi-cbm`, which exposes
+[codebase-memory-mcp](https://github.com/DeusData/codebase-memory-mcp) as native pi tools
+(`search_graph`, `trace_path`, `read_symbol`, …) and auto-indexes the repo. It needs the
+`codebase-memory-mcp` binary from step 4 on your `PATH` (default `~/.local/bin`). To use
+these tools in every repo, not just zen-coding, also run `pi install npm:pi-cbm`.
 
 On first launch pi asks you to trust the project — project-local extensions are code.
 Trust it and zen-coding loads. `npm run agent` does the same with the pi version pinned

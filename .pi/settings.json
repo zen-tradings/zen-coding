@@ -3,6 +3,7 @@
   "defaultModel": "glm-5.3-flash",
   "packages": [
     "npm:@langfuse/pi-observability-plugin",
-    "git:github.com/coderabbitai/skills"
+    "git:github.com/coderabbitai/skills",
+    "npm:pi-cbm"
   ]
 }
