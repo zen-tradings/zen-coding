@@ -18,6 +18,7 @@
  *   ZEN_DIGITALOCEAN_MAX_TOKENS       optional, defaults to 8192
  */
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
+import { claimExtension } from "./shared/load-once";
 
 const DEFAULT_BASE_URL = "https://inference.do-ai.run/v1";
 
@@ -86,6 +87,7 @@ async function discoverModelIds(baseUrl: string, apiKey: string): Promise<string
 }
 
 export default async function (pi: ExtensionAPI) {
+  if (!claimExtension(pi, "zen-models-do")) return; // already loaded (project + global install)
   const apiKey = process.env.ZEN_DIGITALOCEAN_API_KEY;
   if (!apiKey) return;
 

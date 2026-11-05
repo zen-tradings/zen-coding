@@ -37,6 +37,7 @@ import {
 import { resolveSessionId } from "./session";
 import { rewriteGitCommits } from "./trailers";
 import { resolveWorkType, type WorkType } from "./work-type";
+import { claimExtension } from "../shared/load-once";
 
 const COMMIT_ENTRY = "zen-commit";
 const SHUTDOWN_BUDGET_MS = 3000;
@@ -49,6 +50,7 @@ interface CommitRecord {
 }
 
 export default function (pi: ExtensionAPI) {
+  if (!claimExtension(pi, "zen-process")) return; // already loaded (project + global install)
   const lfConfig = loadLangfuseApiConfig();
   const scores = lfConfig ? new ScoreClient(lfConfig) : undefined;
   const backtestPatterns = loadBacktestPatterns();

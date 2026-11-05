@@ -11,6 +11,7 @@
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 import { StringEnum } from "@earendil-works/pi-ai";
 import { Type } from "typebox";
+import { claimExtension } from "../shared/load-once";
 
 const EXA_CATEGORIES = ["github", "research paper", "news", "company", "pdf"];
 
@@ -22,6 +23,7 @@ interface ExaResult {
 }
 
 export default function (pi: ExtensionAPI) {
+  if (!claimExtension(pi, "zen-tools")) return; // already loaded (project + global install)
   pi.registerTool({
     name: "exa_search",
     label: "Exa Search",

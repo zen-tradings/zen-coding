@@ -17,6 +17,7 @@ import type { ExtensionAPI, ExtensionContext } from "@earendil-works/pi-coding-a
 import { appendFileSync, mkdirSync, statSync } from "node:fs";
 import { homedir } from "node:os";
 import { isAbsolute, join, relative, resolve } from "node:path";
+import { claimExtension } from "./shared/load-once";
 
 export const TRACE_SCHEMA_VERSION = 2;
 
@@ -166,6 +167,7 @@ function earliestAsOf(refs: EvidenceRef[]): string | null {
 }
 
 export default function (pi: ExtensionAPI) {
+  if (!claimExtension(pi, "observability")) return; // already loaded (project + global install)
   let tracePath: string | null = null;
   let agentStartedAt = 0;
   let zenMode = "normal";

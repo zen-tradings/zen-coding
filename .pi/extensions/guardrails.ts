@@ -32,6 +32,7 @@ import { homedir } from "node:os";
 import { basename, dirname, isAbsolute, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { minimatch } from "minimatch";
+import { claimExtension } from "./shared/load-once";
 
 interface GuardrailsConfig {
   denyBashPatterns: string[];
@@ -151,6 +152,7 @@ function mergeLocalConfig(base: GuardrailsConfig, cwd: string): GuardrailsConfig
 }
 
 export default function (pi: ExtensionAPI) {
+  if (!claimExtension(pi, "guardrails")) return; // already loaded (project + global install)
   // Base rules loaded once at extension init; fails loudly if none are found.
   const base = loadConfig();
   let config = base;

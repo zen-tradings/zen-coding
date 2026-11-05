@@ -63,7 +63,10 @@ runs in this repo. See README.md and design.md for the full picture.
 
 - `.pi/extensions/` — guardrails, observability (JSONL traces → `~/.zen/traces/`),
   `/zen normal|clarify|plan` modes and `/zen type`, zen-process (session scores, commit
-  trailers), model registration (DigitalOcean, `zen-models-do.ts`), zen-tools
+  trailers), model registration (DigitalOcean, `zen-models-do.ts`), zen-tools;
+  `shared/load-once.ts` makes each extension load once when a global install and a
+  checkout are both active. Every new extension should start with
+  `if (!claimExtension(pi, "<name>")) return;`
 - `.pi/skills/` — shared skills (`langfuse`, `mintlify-docs`, `quant-feature-verify`)
 - `evals/`, `scripts/` — eval harness (`run_eval.py`, `aggregate.py`) and case definitions
 - `docs/` — deep-dive docs (process telemetry, MCP connectors, install-anywhere, evals);

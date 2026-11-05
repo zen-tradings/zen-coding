@@ -17,6 +17,7 @@
  */
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 import { isWorkType, resolveWorkType, WORK_TYPE_ENTRY, WORK_TYPES } from "./zen-process/work-type";
+import { claimExtension } from "./shared/load-once";
 
 type ZenMode = "normal" | "clarify" | "plan";
 
@@ -44,6 +45,7 @@ const MODE_PROMPTS: Record<ZenMode, string | null> = {
 const MUTATING_FILE_TOOLS = new Set(["write", "edit"]);
 
 export default function (pi: ExtensionAPI) {
+  if (!claimExtension(pi, "modes")) return; // already loaded (project + global install)
   let mode: ZenMode = "normal";
 
   pi.registerCommand("zen", {

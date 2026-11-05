@@ -109,7 +109,9 @@ pi install git:github.com/zen-tradings/zen-coding
 Guardrails, traces, `/zen` modes, work-type tags, commit trailers, and `exa_search`
 then load in every project. The quant commands, skills, and connectors are project
 resources — run `pi` inside this repository to use them. See
-[docs/install-anywhere.md](docs/install-anywhere.md).
+[docs/install-anywhere.md](docs/install-anywhere.md). That page also shows how to load
+**only** `/zen type` + zen-process (work-type session scores in Langfuse) in every
+project.
 
 ## Models
 

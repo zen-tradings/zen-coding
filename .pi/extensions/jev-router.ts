@@ -33,6 +33,7 @@
 
 import type { Message } from "@earendil-works/pi-ai";
 import type { ExtensionAPI, ExtensionContext, ModelRoute, ModelRouteRequest } from "@earendil-works/pi-coding-agent";
+import { claimExtension } from "./shared/load-once";
 
 const PROVIDER = "digitalocean";
 // Quant-calibrated defaults: a frontier reasoner for hard planning, the usual default model for
@@ -124,6 +125,7 @@ async function choosePlanningModel(request: JevRequest, ctx: ExtensionContext): 
 }
 
 export default function (pi: ExtensionAPI) {
+	if (!claimExtension(pi, "jev-router")) return; // already loaded (project + global install)
 	pi.registerVirtualModel<JevState>({
 		provider: "jev",
 		id: "auto",
