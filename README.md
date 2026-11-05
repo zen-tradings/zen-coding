@@ -57,10 +57,13 @@ in `package.json`, if you prefer not to install pi globally.
 
 - **Guardrails at the tool boundary** — destructive shell commands blocked, secrets and
   protected paths unwritable, rules that repositories can only tighten.
-- **Cross-model comparison** — Anthropic, OpenAI, and Fireworks (low-cost); switch
-  with `/model` and compare on identical eval tasks.
+- **Cross-model comparison** — DigitalOcean GenAI (default), Anthropic, OpenAI, and
+  Fireworks (low-cost); switch with `/model` and compare on identical eval tasks.
+- **`jev/auto` router** — one virtual model that plans on a strong model and implements on
+  a cheap one (DigitalOcean GenAI).
 - **Research connectors and skills** — alphaXiv, multi-source paper search, GitHub,
-  Docker MCP Toolkit, Render, Mintlify via MCP; WorldQuant BRAIN alpha research as a skill.
+  Docker MCP Toolkit, Render, Mintlify via MCP; skills for Langfuse, Mintlify docs, and
+  quant feature verification.
 - **Process telemetry** — Langfuse session scores for backtest variants tried, work type,
   and commits; `Langfuse-Session` / `Zen-Work-Type` trailers on agent-made commits.
 - **Observability and evals** — JSONL traces of latency, tokens, and cost per session;
@@ -106,8 +109,11 @@ zen-coding is also a [pi package](https://github.com/earendil-works/pi/blob/main
 pi install git:github.com/zen-tradings/zen-coding
 ```
 
-Guardrails, traces, `/zen` modes, work-type tags, commit trailers, and `exa_search`
-then load in every project. The quant commands, skills, and connectors are project
+Guardrails, traces, `/zen` modes, work-type tags, commit trailers, the DigitalOcean
+provider, `jev/auto`, and `exa_search` then load in every project. Already installed?
+Run `pi update git:github.com/zen-tradings/zen-coding` to pick up changes. If you
+also run pi inside a zen-coding checkout, each extension loads once and the checkout's
+copy wins. The quant commands, skills, and connectors are project
 resources — run `pi` inside this repository to use them. See
 [docs/install-anywhere.md](docs/install-anywhere.md). That page also shows how to load
 **only** `/zen type` + zen-process (work-type session scores in Langfuse) in every
@@ -128,6 +134,13 @@ and select a model with `/model`.
 list and DeepSeek-style thinking per model — non-chat models
 (embeddings/rerankers/image/audio/video) are filtered out automatically. See
 `.pi/extensions/zen-models-do.ts`.
+
+**`jev/auto`** (`.pi/extensions/jev-router.ts`) is a virtual model: it plans on a strong
+model (`anthropic-claude-opus-5` for complex work, `glm-5.3` otherwise) and switches to a
+cheap implementation model (`deepseek-v4-pro`) after the first successful edit. Select it
+with `/model` or `--model jev/auto`. It needs `ZEN_DIGITALOCEAN_API_KEY`. The
+complexity classifier needs `TYPESAFE_API_KEY`; without it, planning uses `glm-5.3`.
+Override the three models with `ZEN_JEV_SOL` / `ZEN_JEV_TERRA` / `ZEN_JEV_LUNA`.
 
 The project default lives in `.pi/settings.json` (`defaultProvider` / `defaultModel`).
 Comparing models on cost, latency, and pass rate is a matter of re-running the
@@ -153,6 +166,8 @@ Details and how to add your own: [docs/mcp-connectors.md](docs/mcp-connectors.md
 
 ## Skills
 
+- `langfuse` — query Langfuse data and docs; tracing, datasets, prompts, evals, and
+  experiments.
 - `mintlify-docs` — write, build, validate, and deploy Mintlify documentation sites.
 - `quant-feature-verify` — check whether a quant feature already exists (graph search
   first), then verify it against a quant checklist: lookahead, point-in-time, cost model,
@@ -193,8 +208,8 @@ Every session writes a JSONL trace to `~/.zen/traces/<sessionId>.jsonl` (overrid
 `ZEN_TRACE_DIR`): turn and tool latency, token usage, cost, model switches. To also
 stream sessions to [Langfuse](https://langfuse.com), set `LANGFUSE_PUBLIC_KEY` and
 `LANGFUSE_SECRET_KEY` (optionally `LANGFUSE_BASE_URL`, `LANGFUSE_TRACING_ENVIRONMENT`,
-`LANGFUSE_USER_ID`); this covers both interactive sessions (via the
-`@langfuse/pi-observability-plugin` project pi package). `LANGFUSE_TRACING_ENABLED=false`
+`LANGFUSE_USER_ID`). Interactive sessions are traced by the
+`@langfuse/pi-observability-plugin` project pi package. `LANGFUSE_TRACING_ENABLED=false`
 disables it.
 The trace environment is set per entry point and wins over `langfuse.json`:
 `development` (`npm run agent`) and `experiment`
@@ -247,7 +262,9 @@ produces a `benchmark.json` with per-track pass rates and regressions. Guide:
 
 | Variable | Purpose |
 |---|---|
-| `FIREWORKS_API_KEY`, `ANTHROPIC_API_KEY`, `OPENAI_API_KEY` | Model provider keys (at least one) |
+| `ZEN_DIGITALOCEAN_API_KEY`, `FIREWORKS_API_KEY`, `ANTHROPIC_API_KEY`, `OPENAI_API_KEY` | Model provider keys (at least one) |
+| `ZEN_DIGITALOCEAN_BASE_URL`, `ZEN_DIGITALOCEAN_MODELS`, `ZEN_DIGITALOCEAN_REASONING_MODELS` | DigitalOcean GenAI endpoint, manual model list, models with DeepSeek-style thinking |
+| `ZEN_JEV_SOL`, `ZEN_JEV_TERRA`, `ZEN_JEV_LUNA`, `TYPESAFE_API_KEY` | `jev/auto` model overrides; complexity classifier credentials |
 | `EXA_API_KEY` | Enables the `exa_search` tool (web, code, paper search) |
 | `ALPHAXIV_API_KEY`, `RENDER_API_KEY` | MCP connector credentials |
 | `ZEN_TRACE_DIR`, `ZEN_GUARDRAILS_CONFIG` | Trace directory; alternate guardrail rules file |
@@ -267,13 +284,16 @@ npm run agent         # run the pinned pi version against this repository
 
 | Path | Contents |
 |---|---|
-| `.pi/extensions/` | `guardrails.ts`, `observability.ts`, `modes.ts`, `zen-models-do.ts`, `zen-tools/`, `zen-process/` |
+| `.pi/extensions/` | `guardrails.ts`, `observability.ts`, `modes.ts`, `zen-models-do.ts`, `jev-router.ts`, `zen-tools/`, `zen-process/`; `shared/load-once.ts` (not an extension) |
 | `.pi/skills/` | Skills |
 | `.pi/mcp.json`, `.pi/guardrails.json`, `.pi/zen-process.json`, `.pi/settings.json` | Connector, guardrail, process-telemetry, and default-model configuration |
 | `scripts/`, `evals/` | Eval harness and cases; `scripts/zen_ledger.py` backtest ledger helper |
 | `docs/`, `design.md` | Deep-dive docs; design notes |
 
 Extensions are TypeScript loaded by pi without a build step; keep them dependency-light.
+Every extension starts with `if (!claimExtension(pi, "<name>")) return;`
+(`shared/load-once.ts`), so it loads only once when a global install and a checkout are
+both active.
 Contributor notes for agents are in [AGENTS.md](AGENTS.md). Never commit `.zen/`,
 `.pi/npm/`, or secrets.
 
