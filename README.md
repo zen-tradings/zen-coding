@@ -143,6 +143,9 @@ Details and how to add your own: [docs/mcp-connectors.md](docs/mcp-connectors.md
 ## Skills
 
 - `mintlify-docs` — write, build, validate, and deploy Mintlify documentation sites.
+- `quant-feature-verify` — check whether a quant feature already exists (graph search
+  first), then verify it against a quant checklist: lookahead, point-in-time, cost model,
+  risk checks, data alignment, hardcoded parameters.
 
 ## Safety and guardrails
 

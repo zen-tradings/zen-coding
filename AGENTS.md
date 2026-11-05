@@ -64,7 +64,7 @@ runs in this repo. See README.md and design.md for the full picture.
 - `.pi/extensions/` — guardrails, observability (JSONL traces → `~/.zen/traces/`),
   `/zen normal|clarify|plan` modes and `/zen type`, zen-process (session scores, commit
   trailers), model registration (DigitalOcean, `zen-models-do.ts`), zen-tools
-- `.pi/skills/` — shared skills (`langfuse`, `mintlify-docs`)
+- `.pi/skills/` — shared skills (`langfuse`, `mintlify-docs`, `quant-feature-verify`)
 - `evals/`, `scripts/` — eval harness (`run_eval.py`, `aggregate.py`) and case definitions
 - `docs/` — deep-dive docs (process telemetry, MCP connectors, install-anywhere, evals);
   README.md is the user-facing front page — keep reference detail in `docs/`
