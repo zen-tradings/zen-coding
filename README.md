@@ -228,6 +228,13 @@ scores, with idempotent ids `<sessionId>-<name>` so updates replace rather than 
 - `process.work_type` (categorical) — see **Work type** above.
 - `process.commits` (text) — `repo@sha` of every commit the agent made in the session.
 
+**Expected verification failures are not errors.** Bash verification scripts often exit 1
+by design (a `[FAIL]` marker or a pass/fail summary, e.g. "3 passed, 1 failed"). These
+are treated as expected outcomes: the Langfuse observation stays at the default level
+instead of ERROR, and the trace's `self_check` still records the check's real `fail`
+verdict. Timeouts, permission errors, and crashes — anything without the verification
+signals — keep ERROR.
+
 **Commit trailers** — the agent's own `git commit` commands get
 `Langfuse-Session: <sessionId>` and `Zen-Work-Type: <type>` (via `git commit --trailer`,
 git >= 2.32; no hooks are installed). Commits you make yourself, and commits made by

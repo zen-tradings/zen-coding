@@ -97,9 +97,31 @@ const MAX_FIELD_CHARS = 4000;
 const MAX_MESSAGE_CHARS = 300;
 const MAX_REFS = 50;
 
-// Bash commands treated as verification steps (role "check").
+// Bash commands treated as verification steps (role "check"), plus custom
+// verify/check/audit scripts (the expected-verification-failure hook targets
+// the same scripts; self_check then records the check's real verdict).
 const CHECK_COMMAND =
-  /\b(pytest|unittest|tsc|mypy|pyright|ruff|flake8|eslint|jest|vitest|go (test|vet)|cargo (test|check|clippy)|(npm|pnpm|yarn)( run)? (test|typecheck|lint|check)|make (test|check|lint)|run_eval\.py)\b/;
+  /\b(pytest|unittest|tsc|mypy|pyright|ruff|flake8|eslint|jest|vitest|go (test|vet)|cargo (test|check|clippy)|(npm|pnpm|yarn)( run)? (test|typecheck|lint|check)|make (test|check|lint)|run_eval\.py)\b|(?:verify|checks?|audit)[\w-]*\.(?:sh|py)\b/;
+
+// Expected verification failures: verification/audit scripts that signal "the
+// check failed" by printing a [FAIL] marker or a pass/fail summary and exiting
+// 1 — that is their normal contract, not a script error. Genuine failures use
+// other exits (timeout 124/128+, permission 126/127, crashes 128+n) or lack
+// the verification signals, so they keep their isError flag.
+const VERIFICATION_MARKER = /\[(?:fail)\]/i;
+const VERIFICATION_CONTEXT = /\b(?:verif\w*|check\w*|audit\w*)\b/i;
+const VERIFICATION_SUMMARY =
+  /\b\d+\s+(?:passed|failed)\b|\bpassed\b[\s\S]*\bfailed\b|\bfailed\b[\s\S]*\bpassed\b|\bchecks?\s+(?:passed|failed)\b|\bverification\s+(?:passed|failed)\b/i;
+
+export function isExpectedVerificationFailure(
+  command: string,
+  output: string,
+  exitCode: number | undefined,
+): boolean {
+  if (exitCode !== 1) return false;
+  if (VERIFICATION_MARKER.test(output)) return true;
+  return VERIFICATION_CONTEXT.test(`${command}\n${output}`) && VERIFICATION_SUMMARY.test(output);
+}
 
 const MUTATING_FILE_TOOLS = new Set(["write", "edit"]);
 const PATH_TOOLS = new Set(["read", "write", "edit", "grep", "find", "ls"]);
@@ -176,6 +198,9 @@ export default function (pi: ExtensionAPI) {
   const toolCalls = new Map<string, { args: unknown; role: StepRole; refs: EvidenceRef[] }>();
   // Unresolved tool failure chain, used to infer recovery on later steps.
   let pendingFailure: { toolName: string; attempts: number } | null = null;
+  // Bash calls whose non-zero exit was an expected verification failure (see
+  // the tool_result hook below). Cleared on tool_execution_end.
+  const expectedVerificationFailures = new Set<string>();
 
   pi.events.on("zen:mode", (mode) => {
     if (typeof mode === "string") zenMode = mode;
@@ -285,6 +310,27 @@ export default function (pi: ExtensionAPI) {
     }
   };
 
+  // Bash verification/audit scripts often exit 1 on purpose ("[FAIL]", a
+  // pass/fail summary) — that is their contract, not a crash. pi marks every
+  // non-zero bash exit isError and the Langfuse plugin reports those
+  // observations as ERROR, drowning out genuine failures. Clear isError for
+  // the expected case; pi applies the override before tool_execution_end, so
+  // the plugin reports a neutral level and the session stops inheriting ERROR.
+  // The local trace keeps the real outcome in self_check.
+  pi.on("tool_result", (event) => {
+    if (event.toolName !== "bash" || !event.isError) return undefined;
+    const output = resultText({ content: event.content });
+    const command = typeof event.input?.command === "string" ? event.input.command : "";
+    const structured = event.structuredContent as { exit_code?: unknown } | undefined;
+    const exitCode =
+      typeof structured?.exit_code === "number"
+        ? structured.exit_code
+        : Number(/Command exited with code (\d+)/m.exec(output)?.[1] ?? NaN);
+    if (!isExpectedVerificationFailure(command, output, exitCode)) return undefined;
+    expectedVerificationFailures.add(event.toolCallId);
+    return { isError: false };
+  });
+
   pi.on("session_start", async (_event, ctx) => {
     const dir = process.env.ZEN_TRACE_DIR ?? join(homedir(), ".zen", "traces");
     try {
@@ -364,16 +410,21 @@ export default function (pi: ExtensionAPI) {
       pendingFailure = null;
     }
 
+    const wasExpectedVerification = expectedVerificationFailures.delete(event.toolCallId);
     let selfCheck: TraceSelfCheck | null = null;
     const command = (call?.args as { command?: unknown } | undefined)?.command;
     if (role === "check" && typeof command === "string") {
       selfCheck = {
         what_was_checked: clip(command.split("\n")[0], 200),
-        result: !error
-          ? "pass"
-          : error.type === "timeout" || error.type === "aborted" || error.type === "blocked"
-            ? "uncertain"
-            : "fail",
+        // Expected verification failures keep the check's real verdict; only
+        // the error flag was cleared, not the check outcome.
+        result: wasExpectedVerification
+          ? "fail"
+          : !error
+            ? "pass"
+            : error.type === "timeout" || error.type === "aborted" || error.type === "blocked"
+              ? "uncertain"
+              : "fail",
       };
     }
 
