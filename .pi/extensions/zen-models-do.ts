@@ -16,9 +16,30 @@
  *                                     default reasoning list (probed via scripts/check-do-reasoning.sh)
  *   ZEN_DIGITALOCEAN_CONTEXT_WINDOW   optional, defaults to 128000
  *   ZEN_DIGITALOCEAN_MAX_TOKENS       optional, defaults to 8192
+ *
+ * When ZEN_DIGITALOCEAN_API_KEY is not in the environment, the key is read from
+ * ~/.pi/agent/zen.json ({"digitalocean": {"apiKey": "do-..."}}) — that file travels
+ * with your pi setup to every project, so no per-shell export is needed.
  */
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
+import { readFileSync } from "node:fs";
+import { homedir } from "node:os";
+import { join } from "node:path";
 import { claimExtension } from "./shared/load-once";
+
+/** Read a value from ~/.pi/agent/zen.json; undefined when absent/malformed. */
+function zenConfigValue(path: string[]): string | undefined {
+  try {
+    let cur: unknown = JSON.parse(readFileSync(join(homedir(), ".pi/agent/zen.json"), "utf8"));
+    for (const key of path) {
+      if (cur == null || typeof cur !== "object") return undefined;
+      cur = (cur as Record<string, unknown>)[key];
+    }
+    return typeof cur === "string" && cur.trim() ? cur.trim() : undefined;
+  } catch {
+    return undefined;
+  }
+}
 
 const DEFAULT_BASE_URL = "https://inference.do-ai.run/v1";
 
@@ -88,7 +109,8 @@ async function discoverModelIds(baseUrl: string, apiKey: string): Promise<string
 
 export default async function (pi: ExtensionAPI) {
   if (!claimExtension(pi, "zen-models-do")) return; // already loaded (project + global install)
-  const apiKey = process.env.ZEN_DIGITALOCEAN_API_KEY;
+  // Env var wins; ~/.pi/agent/zen.json is the persistent fallback.
+  const apiKey = process.env.ZEN_DIGITALOCEAN_API_KEY || zenConfigValue(["digitalocean", "apiKey"]);
   if (!apiKey) return;
 
   const baseUrl = process.env.ZEN_DIGITALOCEAN_BASE_URL ?? DEFAULT_BASE_URL;

@@ -135,6 +135,14 @@ list and DeepSeek-style thinking per model — non-chat models
 (embeddings/rerankers/image/audio/video) are filtered out automatically. See
 `.pi/extensions/zen-models-do.ts`.
 
+If the DO key isn't in the environment, it's read from `~/.pi/agent/zen.json`
+(env var wins) — one file, works in every project when zen-coding is installed
+globally, no per-shell `export` needed:
+
+```json
+{ "digitalocean": { "apiKey": "do-..." } }
+```
+
 **`jev/auto`** (`.pi/extensions/jev-router.ts`) is a virtual model: it plans on a strong
 model (`anthropic-claude-opus-5` for complex work, `glm-5.3` otherwise) and switches to a
 cheap implementation model (`deepseek-v4-pro`) after the first successful edit. Select it

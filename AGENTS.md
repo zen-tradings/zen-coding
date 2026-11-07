@@ -21,7 +21,8 @@ runs in this repo. See README.md and design.md for the full picture.
 - Model provider key (at least one): `DEEPSEEK_API_KEY`, `ANTHROPIC_API_KEY`,
   `GROQ_API_KEY`, `OPENROUTER_API_KEY`, `FIREWORKS_API_KEY`, …
 - `ZEN_DIGITALOCEAN_API_KEY` — DigitalOcean GenAI Serverless Inference (default
-  provider when set). Optional: `ZEN_DIGITALOCEAN_BASE_URL`,
+  provider when set; fallback `~/.pi/agent/zen.json`
+  `{"digitalocean":{"apiKey":...}}`). Optional: `ZEN_DIGITALOCEAN_BASE_URL`,
   `ZEN_DIGITALOCEAN_MODELS` (manual list, else auto-discovered),
   `ZEN_DIGITALOCEAN_REASONING_MODELS` (DeepSeek-style thinking),
   `ZEN_DIGITALOCEAN_CONTEXT_WINDOW`, `ZEN_DIGITALOCEAN_MAX_TOKENS` — see
